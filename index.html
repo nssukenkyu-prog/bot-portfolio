@@ -3,54 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects Portfolio Hub</title>
+    <title>Project Portfolio</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="hero-container">
-        <div class="animated-bg"></div>
-        <header class="hero-header">
-            <h1 class="hero-title">🤖 Bot Projects Portfolio</h1>
-            <p class="hero-subtitle">プロジェクトポートフォリオを選択してください</p>
-        </header>
-
-        <div class="portfolio-selector">
-            <div class="portfolio-card" onclick="selectPortfolio('yuzu')">
-                <div class="card-icon">🚴‍♂️</div>
-                <h2>Yuzu bot.</h2>
-                <p>Yuzu botのプロジェクト一覧</p>
-                <div class="card-arrow">→</div>
-            </div>
-
-            <div class="portfolio-card" onclick="selectPortfolio('kedo')">
-                <div class="card-icon">🔥</div>
-                <h2>Kedo bot.</h2>
-                <p>Kedo botのプロジェクト一覧</p>
-                <div class="card-arrow">→</div>
-            </div>
+<body class="portfolio-page">
+    <nav class="top-nav">
+        <h1 class="nav-title">🚀 Projects Portfolio</h1>
+        <div class="nav-right">
+            <a href="admin.html" class="nav-admin">🔐 管理画面</a>
         </div>
+    </nav>
 
-        <footer class="hero-footer">
-            <p>どちらかのポートフォリオを選択して、プロジェクトを閲覧・管理できます</p>
-        </footer>
+    <div class="container">
+        <div class="filter-section" id="filter-section">
+            </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>データを取得中...</p>
+        </div>
+        <div id="projects-grid" class="projects-grid"></div>
     </div>
 
-    <script>
-        function selectPortfolio(bot) {
-            // ポートフォリオページに遷移
-            window.location.href = `portfolio.html?bot=${bot}`;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ■■■ Firebase設定 ■■■
+        const firebaseConfig = {
+            apiKey: "AIzaSyDQuSOlOynAMMtBhBNBoGNHToN6QL-qkX4",
+            authDomain: "portfolio-db-5df49.firebaseapp.com",
+            projectId: "portfolio-db-5df49",
+            storageBucket: "portfolio-db-5df49.firebasestorage.app",
+            messagingSenderId: "587043981242",
+            appId: "1:587043981242:web:e74d3edb165569f0913f83",
+            measurementId: "G-RDGM3YC3G4"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let projectsData = [];
+        let categoriesData = [];
+        let platformsData = {};
+
+        async function init() {
+            const loading = document.getElementById('loading');
+            try {
+                // 1. カテゴリーとプラットフォームを並列取得
+                const [catSnap, platSnap, projSnap] = await Promise.all([
+                    getDocs(query(collection(db, "categories"), orderBy("order"))),
+                    getDocs(collection(db, "platforms")),
+                    getDocs(query(collection(db, "projects"), orderBy("createdAt", "desc")))
+                ]);
+
+                // カテゴリー整理
+                categoriesData = [];
+                catSnap.forEach(doc => categoriesData.push({ id: doc.id, ...doc.data() }));
+
+                // プラットフォーム整理 (IDで引けるようにMap化)
+                platformsData = {};
+                platSnap.forEach(doc => platformsData[doc.id] = doc.data());
+
+                // プロジェクト整理
+                projectsData = [];
+                projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
+
+                renderFilters();
+                displayProjects('all');
+                loading.style.display = 'none';
+
+            } catch (e) {
+                console.error(e);
+                loading.innerHTML = `<p class="error-message">読み込みエラー: ${e.message}</p>`;
+            }
         }
 
-        // アニメーション効果
-        document.addEventListener('DOMContentLoaded', () => {
-            const cards = document.querySelectorAll('.portfolio-card');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 150);
+        // フィルターボタン描画
+        function renderFilters() {
+            const container = document.getElementById('filter-section');
+            let html = `<button class="filter-btn active" onclick="filterProjects('all')">すべて</button>`;
+            
+            categoriesData.forEach(cat => {
+                html += `<button class="filter-btn" onclick="filterProjects('${cat.id}')">${cat.name}</button>`;
             });
-        });
+            container.innerHTML = html;
+        }
+
+        // フィルタリング機能 (グローバル)
+        window.filterProjects = (catId) => {
+            // ボタンの見た目更新
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            displayProjects(catId);
+        };
+
+        // プロジェクト表示
+        function displayProjects(filterCatId) {
+            const grid = document.getElementById('projects-grid');
+            
+            // フィルタリング
+            const targets = filterCatId === 'all' 
+                ? projectsData 
+                : projectsData.filter(p => p.categoryId === filterCatId);
+
+            if (targets.length === 0) {
+                grid.innerHTML = '<div class="no-projects"><p>プロジェクトがありません</p></div>';
+                return;
+            }
+
+            grid.innerHTML = targets.map(p => {
+                const platform = platformsData[p.platformId] || { name: 'Unknown', color: '#ccc' };
+                const thumbUrl = convertGoogleDriveUrl(p.thumbnail);
+                const hasLink = !!p.url; // URLがあるかどうか
+
+                return `
+                <div class="project-card">
+                    <div class="project-thumbnail">
+                        ${thumbUrl 
+                            ? `<img src="${thumbUrl}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>📄</div>'">` 
+                            : `<div class="thumbnail-placeholder">📄</div>`}
+                        <div class="thumbnail-overlay">
+                            <span class="platform-badge" style="background:${platform.color}">${platform.name}</span>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <div class="project-meta">
+                            <span class="creator-badge">👤 ${p.creator}</span>
+                        </div>
+                        <h3>${p.title}</h3>
+                        <p class="project-description">${p.description || ''}</p>
+                        
+                        ${p.tags ? `<div class="project-tags">${p.tags.split(',').map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+
+                        <div class="project-links">
+                            ${hasLink ? `
+                                <a href="${p.url}" target="_blank" class="project-link project-link-view">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
+                                    サイトを開く
+                                </a>
+                            ` : `
+                                <span class="project-link disabled">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                                    リンクなし (内部ツール)
+                                </span>
+                            `}
+                            
+                            ${p.editUrl ? `
+                                <a href="${p.editUrl}" target="_blank" class="project-link project-link-edit">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+                                    編集画面
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function convertGoogleDriveUrl(url) {
+            if (!url) return '';
+            const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (driveMatch) return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w800`;
+            const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (idMatch) return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w800`;
+            return url;
+        }
+
+        init();
     </script>
 </body>
 </html>
