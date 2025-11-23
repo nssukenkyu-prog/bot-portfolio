@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理画面 - Portfolio Manager</title>
+    <title>総合管理画面 - Portfolio</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="admin-page">
     <nav class="top-nav">
-        <a href="portfolio.html" class="nav-back">← ポートフォリオに戻る</a>
-        <h1 class="nav-title">🔐 管理画面 (Firebase)</h1>
+        <a href="portfolio.html" class="nav-back">← 一覧に戻る</a>
+        <h1 class="nav-title">⚙️ 総合管理画面</h1>
         <div class="nav-right">
             <button id="logout-btn" class="nav-logout" style="display: none;">ログアウト</button>
         </div>
@@ -19,7 +19,6 @@
         <div class="auth-card">
             <div class="auth-icon">🔒</div>
             <h2>管理者ログイン</h2>
-            <p class="auth-subtitle">Firebaseに登録した情報を入力</p>
             <form id="login-form">
                 <input type="email" id="email" placeholder="メールアドレス" required>
                 <input type="password" id="password" placeholder="パスワード" required>
@@ -30,199 +29,296 @@
     </div>
 
     <div id="admin-content" class="container" style="display: none;">
-        <div class="admin-panel">
-            <h2>✨ 新しいプロジェクトを追加</h2>
-            <form id="add-form" class="project-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>タイトル *</label>
-                        <input type="text" name="title" required placeholder="プロジェクト名" />
+        
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="switchTab('projects')">📂 プロジェクト</button>
+            <button class="tab-btn" onclick="switchTab('categories')">🏷️ カテゴリー (メイン)</button>
+            <button class="tab-btn" onclick="switchTab('platforms')">🔧 プラットフォーム (サブ)</button>
+        </div>
+
+        <div id="tab-projects" class="tab-content">
+            <div class="admin-panel">
+                <h2>✨ プロジェクト追加</h2>
+                <form id="add-project-form" class="project-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>タイトル *</label>
+                            <input type="text" name="title" required />
+                        </div>
+                        <div class="form-group">
+                            <label>作成者 *</label>
+                            <input type="text" name="creator" placeholder="例: Yuzu bot" required list="creators-list"/>
+                            <datalist id="creators-list">
+                                <option value="Yuzu bot">
+                                <option value="Kedo bot">
+                            </datalist>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Bot選択 *</label>
-                        <select name="bot">
-                            <option value="yuzu">🚴‍♂️ Yuzu bot</option>
-                            <option value="kedo">🔥 Kedo bot</option>
-                        </select>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>メインカテゴリー *</label>
+                            <select name="categoryId" id="project-category-select" required>
+                                <option value="">選択してください</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>プラットフォーム (サブ) *</label>
+                            <select name="platformId" id="project-platform-select" required>
+                                <option value="">選択してください</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>説明</label>
-                    <textarea name="description" rows="3" placeholder="説明文"></textarea>
-                </div>
-                
-                <div class="form-row">
+                    
                     <div class="form-group">
-                        <label>カテゴリー</label>
-                        <select name="platform">
-                            <option value="GAS">GAS</option>
-                            <option value="GitHub">GitHub</option>
-                            <option value="Cloudflare">Cloudflare</option>
-                            <option value="Genspark">Genspark</option>
-                            <option value="Vercel">Vercel</option>
-                            <option value="Other">その他</option>
-                        </select>
+                        <label>説明</label>
+                        <textarea name="description" rows="3"></textarea>
                     </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>公開URL (空欄可)</label>
+                            <input type="url" name="url" placeholder="https://..." />
+                            <small class="form-hint">※GASなどでリンクがない場合は空欄にしてください</small>
+                        </div>
+                        <div class="form-group">
+                            <label>編集URL (任意)</label>
+                            <input type="url" name="editUrl" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>サムネイル画像URL</label>
+                        <input type="url" name="thumbnail" />
+                    </div>
+
                     <div class="form-group">
                         <label>タグ (カンマ区切り)</label>
-                        <input type="text" name="tags" placeholder="例: GAS, TypeScript" />
+                        <input type="text" name="tags" />
                     </div>
-                </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>公開URL *</label>
-                        <input type="url" name="url" required placeholder="https://..." />
-                    </div>
-                    <div class="form-group">
-                        <label>編集URL (任意)</label>
-                        <input type="url" name="editUrl" placeholder="https://..." />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>サムネイル画像URL</label>
-                    <input type="url" name="thumbnail" placeholder="Google Driveのリンクなど" />
-                </div>
-
-                <button type="submit" class="btn-primary">追加する</button>
-            </form>
+                    <button type="submit" class="btn-primary">プロジェクトを追加</button>
+                </form>
+            </div>
+            
+            <div class="admin-panel">
+                <h2>📋 登録済みプロジェクト</h2>
+                <div id="admin-projects-list" class="admin-list"></div>
+            </div>
         </div>
 
-        <div class="admin-panel">
-            <h2>📋 登録済みプロジェクト</h2>
-            <div id="admin-projects-list" class="admin-list"></div>
+        <div id="tab-categories" class="tab-content" style="display:none;">
+            <div class="admin-panel">
+                <h2>🏷️ メインカテゴリー設定</h2>
+                <p class="form-hint">「健康」「業務」「公開講座」などを登録します。</p>
+                <form id="add-category-form" class="project-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>カテゴリー名 *</label>
+                            <input type="text" name="name" required placeholder="例: 健康" />
+                        </div>
+                        <div class="form-group">
+                            <label>表示順 (数字) *</label>
+                            <input type="number" name="order" required value="1" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">カテゴリーを追加</button>
+                </form>
+                <div id="admin-categories-list" class="admin-list" style="margin-top: 2rem;"></div>
+            </div>
         </div>
+
+        <div id="tab-platforms" class="tab-content" style="display:none;">
+            <div class="admin-panel">
+                <h2>🔧 プラットフォーム (サブ) 設定</h2>
+                <p class="form-hint">「GAS」「GitHub」などを登録します。</p>
+                <form id="add-platform-form" class="project-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>名称 *</label>
+                            <input type="text" name="name" required placeholder="例: GAS" />
+                        </div>
+                        <div class="form-group">
+                            <label>バッジ色 *</label>
+                            <input type="color" name="color" value="#34A853" class="color-input"/>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">プラットフォームを追加</button>
+                </form>
+                <div id="admin-platforms-list" class="admin-list" style="margin-top: 2rem;"></div>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ■■■ 設定エリア (portfolio.htmlと同じものを貼る) ■■■
+        // ■■■ Firebase設定 (ご自身のものを貼ってください) ■■■
         const firebaseConfig = {
-  apiKey: "AIzaSyDQuSOlOynAMMtBhBNBoGNHToN6QL-qkX4",
-  authDomain: "portfolio-db-5df49.firebaseapp.com",
-  projectId: "portfolio-db-5df49",
-  storageBucket: "portfolio-db-5df49.firebasestorage.app",
-  messagingSenderId: "587043981242",
-  appId: "1:587043981242:web:e74d3edb165569f0913f83",
-  measurementId: "G-RDGM3YC3G4"
-};
-
+            apiKey: "AIzaSyDQuSOlOynAMMtBhBNBoGNHToN6QL-qkX4",
+            authDomain: "portfolio-db-5df49.firebaseapp.com",
+            projectId: "portfolio-db-5df49",
+            storageBucket: "portfolio-db-5df49.firebasestorage.app",
+            messagingSenderId: "587043981242",
+            appId: "1:587043981242:web:e74d3edb165569f0913f83",
+            measurementId: "G-RDGM3YC3G4"
+        };
         // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ログイン処理
-        const loginForm = document.getElementById('login-form');
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorEl = document.getElementById('auth-error');
+        // タブ切り替え機能 (グローバル関数として定義)
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
             
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // クリックされたボタンをアクティブに（簡易実装）
+            event.target.classList.add('active');
+        };
+
+        // ログイン処理
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
             try {
-                await signInWithEmailAndPassword(auth, email, password);
-                errorEl.textContent = '';
+                await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
             } catch (error) {
-                errorEl.textContent = 'ログイン失敗: ' + error.message;
+                document.getElementById('auth-error').textContent = 'ログイン失敗: ' + error.message;
             }
         });
 
-        // ログアウト処理
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            signOut(auth);
-        });
+        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
-        // 認証状態の監視
+        // 認証監視 & データ読み込み開始
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('auth-section').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
                 document.getElementById('logout-btn').style.display = 'block';
-                loadAdminProjects();
+                
+                // 各種データをリアルタイム監視で読み込み
+                subscribeData();
             } else {
                 document.getElementById('auth-section').style.display = 'flex';
                 document.getElementById('admin-content').style.display = 'none';
-                document.getElementById('logout-btn').style.display = 'none';
             }
         });
 
-        // データ追加
-        document.getElementById('add-form').addEventListener('submit', async (e) => {
+        let categoriesMap = {};
+        let platformsMap = {};
+
+        function subscribeData() {
+            // 1. カテゴリー読み込み
+            const qCat = query(collection(db, "categories"), orderBy("order"));
+            onSnapshot(qCat, (snapshot) => {
+                const listEl = document.getElementById('admin-categories-list');
+                const selectEl = document.getElementById('project-category-select');
+                
+                listEl.innerHTML = '';
+                selectEl.innerHTML = '<option value="">選択してください</option>';
+                categoriesMap = {};
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    categoriesMap[doc.id] = d;
+                    
+                    // リスト表示
+                    listEl.innerHTML += `
+                        <div class="admin-item">
+                            <span>${d.order}. <strong>${d.name}</strong></span>
+                            <button class="btn-delete" onclick="deleteItem('categories', '${doc.id}')">削除</button>
+                        </div>`;
+                    
+                    // セレクトボックスに追加
+                    selectEl.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
+                });
+            });
+
+            // 2. プラットフォーム読み込み
+            const qPlat = query(collection(db, "platforms"), orderBy("name"));
+            onSnapshot(qPlat, (snapshot) => {
+                const listEl = document.getElementById('admin-platforms-list');
+                const selectEl = document.getElementById('project-platform-select');
+                
+                listEl.innerHTML = '';
+                selectEl.innerHTML = '<option value="">選択してください</option>';
+                platformsMap = {};
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    platformsMap[doc.id] = d;
+
+                    listEl.innerHTML += `
+                        <div class="admin-item">
+                            <span><span class="color-sample" style="background:${d.color}; width:15px; height:15px; display:inline-block; margin-right:5px;"></span>${d.name}</span>
+                            <button class="btn-delete" onclick="deleteItem('platforms', '${doc.id}')">削除</button>
+                        </div>`;
+                    
+                    selectEl.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
+                });
+            });
+
+            // 3. プロジェクト読み込み
+            const qProj = query(collection(db, "projects"), orderBy("createdAt", "desc"));
+            onSnapshot(qProj, (snapshot) => {
+                const listEl = document.getElementById('admin-projects-list');
+                listEl.innerHTML = '';
+
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    // IDから名前を解決
+                    const catName = categoriesMap[d.categoryId]?.name || '未設定';
+                    const platName = platformsMap[d.platformId]?.name || '未設定';
+
+                    listEl.innerHTML += `
+                        <div class="admin-item">
+                            <div class="admin-item-info">
+                                <h3>${d.title}</h3>
+                                <p class="form-hint">
+                                    👤 ${d.creator} | 🏷️ ${catName} | 🔧 ${platName} 
+                                    ${d.url ? '🔗あり' : '🔗なし'}
+                                </p>
+                            </div>
+                            <button class="btn-delete" onclick="deleteItem('projects', '${doc.id}')">削除</button>
+                        </div>`;
+                });
+            });
+        }
+
+        // 共通削除関数 (グローバル)
+        window.deleteItem = async (colName, id) => {
+            if(confirm('本当に削除しますか？')) {
+                await deleteDoc(doc(db, colName, id));
+            }
+        };
+
+        // 追加フォーム処理
+        document.getElementById('add-category-form').addEventListener('submit', (e) => handleSubmit(e, 'categories'));
+        document.getElementById('add-platform-form').addEventListener('submit', (e) => handleSubmit(e, 'platforms'));
+        document.getElementById('add-project-form').addEventListener('submit', (e) => handleSubmit(e, 'projects'));
+
+        async function handleSubmit(e, colName) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             
-            // 追加日時を保存（並び替え用）
+            // 数値変換
+            if (data.order) data.order = parseInt(data.order);
+            
+            // 作成日時
             data.createdAt = new Date().toISOString();
 
             try {
-                await addDoc(collection(db, "projects"), data);
-                alert('✨ 追加しました！');
+                await addDoc(collection(db, colName), data);
+                alert('追加しました');
                 e.target.reset();
-                loadAdminProjects();
-            } catch (error) {
-                alert('エラー: ' + error.message);
-            }
-        });
-
-        // 一覧取得
-        async function loadAdminProjects() {
-            const listEl = document.getElementById('admin-projects-list');
-            listEl.innerHTML = '<p>読み込み中...</p>';
-            
-            try {
-                const q = query(collection(db, "projects"), orderBy("createdAt", "desc")); // 新しい順
-                const querySnapshot = await getDocs(q); // エラーが出る場合は orderBy を外す
-                
-                if (querySnapshot.empty) {
-                    listEl.innerHTML = '<p>データがありません</p>';
-                    return;
-                }
-
-                let html = '';
-                querySnapshot.forEach((doc) => {
-                    const p = doc.data();
-                    html += `
-                        <div class="admin-item">
-                            <div class="admin-item-info">
-                                <h3>${p.title} <span style="font-size:0.8em; color:#666">(${p.bot})</span></h3>
-                                <p>${p.description || ''}</p>
-                            </div>
-                            <div class="admin-item-actions">
-                                <button class="btn-delete" data-id="${doc.id}">削除</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                listEl.innerHTML = html;
-
-                // 削除ボタンのイベント設定
-                document.querySelectorAll('.btn-delete').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        if(confirm('本当に削除しますか？')) {
-                            await deleteDoc(doc(db, "projects", btn.dataset.id));
-                            alert('削除しました');
-                            loadAdminProjects();
-                        }
-                    });
-                });
-
-            } catch (error) {
-                console.error(error);
-                // インデックスエラー回避のため、単純取得にフォールバック
-                if(error.message.includes("index")) {
-                    const snapshot = await getDocs(collection(db, "projects"));
-                    // ... (同じ表示処理)
-                    alert('初回のため並び替えインデックスが作成されていません。しばらくすると治ります。');
-                }
-                listEl.innerHTML = '読み込みエラー';
+            } catch (err) {
+                alert('エラー: ' + err.message);
             }
         }
     </script>
