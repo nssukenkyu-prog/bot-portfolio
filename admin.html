@@ -128,6 +128,18 @@
             </div>
         </div>
 
+        <div class="form-row">
+    <div class="form-group">
+        <label>表示順 (小さい数字が上)</label>
+        <input type="number" name="order" id="input-order" value="100" placeholder="例: 1" />
+        <small class="form-hint">※デフォルトは100です。1にすると一番上に来ます。</small>
+    </div>
+    <div class="form-group">
+        <label>タグ (カンマ区切り)</label>
+        <input type="text" name="tags" id="input-tags" />
+    </div>
+</div>
+        
         <div id="tab-platforms" class="tab-content" style="display:none;">
             <div class="admin-panel">
                 <h2>🔧 プラットフォーム (サブ) 設定</h2>
@@ -263,97 +275,100 @@
                 });
             });
 
-            // 3. プロジェクト (作成日順)
-            const qProj = query(collection(db, "projects"), orderBy("createdAt", "desc"));
-            onSnapshot(qProj, (snapshot) => {
-                const listEl = document.getElementById('admin-projects-list');
-                listEl.innerHTML = '';
-                window.projectsMap = {}; // データ更新
+            // 3. プロジェクト読み込み
+    // ★修正: ここでは単純に作成日順で取っておき、表示時にJSでorder順に並べ直します
+    const qProj = query(collection(db, "projects"), orderBy("createdAt", "desc"));
+    onSnapshot(qProj, (snapshot) => {
+        const listEl = document.getElementById('admin-projects-list');
+        listEl.innerHTML = '';
+        window.projectsMap = {};
 
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    window.projectsMap[doc.id] = d;
-                    
-                    const catName = categoriesMap[d.categoryId]?.name || '未設定';
-                    const platName = platformsMap[d.platformId]?.name || '未設定';
+        let projects = [];
+        snapshot.forEach(doc => {
+            projects.push({ id: doc.id, ...doc.data() });
+        });
 
-                    listEl.innerHTML += `
-                        <div class="admin-item">
-                            <div class="admin-item-info">
-                                <h3>${d.title}</h3>
-                                <p class="form-hint">
-                                    👤 ${d.creator} | 🏷️ ${catName} | 🔧 ${platName} 
-                                    ${d.url ? '🔗あり' : '🔗なし'}
-                                </p>
-                            </div>
-                            <div class="admin-item-actions">
-                                <button class="btn-edit" onclick="editProject('${doc.id}')" style="background-color:#f59e0b; margin-right:5px;">編集</button>
-                                <button class="btn-delete" onclick="deleteItem('projects', '${doc.id}')">削除</button>
-                            </div>
-                        </div>`;
-                });
-            });
-        }
+        // ★追加: ここで「表示順(order)」の昇順に並び替え
+        // orderがない場合は 999 として扱います
+        projects.sort((a, b) => (a.order === undefined ? 999 : a.order) - (b.order === undefined ? 999 : b.order));
 
-        // 編集モードへ切り替え
-        window.editProject = (id) => {
-            const d = window.projectsMap[id];
-            if (!d) return;
-
-            document.getElementById('edit-doc-id').value = id;
-            document.getElementById('input-title').value = d.title;
-            document.getElementById('input-creator').value = d.creator;
-            document.getElementById('project-category-select').value = d.categoryId;
-            document.getElementById('project-platform-select').value = d.platformId;
-            document.getElementById('input-description').value = d.description || '';
-            document.getElementById('input-url').value = d.url || '';
-            document.getElementById('input-editUrl').value = d.editUrl || '';
-            document.getElementById('input-tags').value = d.tags || '';
-
-            // UI変更
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.textContent = '更新する';
-            submitBtn.style.background = '#f59e0b';
-            document.getElementById('cancel-edit-btn').style.display = 'inline-block';
-
-            // スクロール
-            document.getElementById('add-project-form').scrollIntoView({ behavior: 'smooth' });
-        };
-
-        // フォームのリセット
-        window.resetForm = () => {
-            document.getElementById('add-project-form').reset();
-            document.getElementById('edit-doc-id').value = '';
+        projects.forEach(d => {
+            window.projectsMap[d.id] = d;
             
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.textContent = 'プロジェクトを追加';
-            submitBtn.style.background = '';
-            document.getElementById('cancel-edit-btn').style.display = 'none';
-        };
+            const catName = categoriesMap[d.categoryId]?.name || '未設定';
+            const platName = platformsMap[d.platformId]?.name || '未設定';
+            const orderVal = d.order === undefined ? '-' : d.order; // 表示用
 
-        // 共通削除関数
-        window.deleteItem = async (colName, id) => {
-            if(confirm('本当に削除しますか？')) {
-                await deleteDoc(doc(db, colName, id));
-            }
-        };
+            listEl.innerHTML += `
+                <div class="admin-item">
+                    <div class="admin-item-info">
+                        <h3>
+                            <span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:0.8em; margin-right:5px;">#${orderVal}</span>
+                            ${d.title}
+                        </h3>
+                        <p class="form-hint">
+                            👤 ${d.creator} | 🏷️ ${catName} | 🔧 ${platName} 
+                        </p>
+                    </div>
+                    <div class="admin-item-actions">
+                        <button class="btn-edit" onclick="editProject('${d.id}')" style="background-color:#f59e0b; margin-right:5px;">編集</button>
+                        <button class="btn-delete" onclick="deleteItem('projects', '${d.id}')">削除</button>
+                    </div>
+                </div>`;
+        });
+    });
+}
 
-        // 追加・更新フォーム処理
-        document.getElementById('add-category-form').addEventListener('submit', (e) => handleSubmit(e, 'categories'));
-        document.getElementById('add-platform-form').addEventListener('submit', (e) => handleSubmit(e, 'platforms'));
-        document.getElementById('add-project-form').addEventListener('submit', (e) => handleSubmit(e, 'projects'));
+// 編集モードへ切り替え
+window.editProject = (id) => {
+    const d = window.projectsMap[id];
+    if (!d) return;
 
-        async function handleSubmit(e, colName) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-            
-            // 編集用IDの処理
-            const docId = data.docId;
-            delete data.docId;
+    document.getElementById('edit-doc-id').value = id;
+    document.getElementById('input-title').value = d.title;
+    document.getElementById('input-creator').value = d.creator;
+    document.getElementById('project-category-select').value = d.categoryId;
+    document.getElementById('project-platform-select').value = d.platformId;
+    document.getElementById('input-description').value = d.description || '';
+    document.getElementById('input-url').value = d.url || '';
+    document.getElementById('input-editUrl').value = d.editUrl || '';
+    document.getElementById('input-tags').value = d.tags || '';
+    // ★追加: 表示順のセット
+    document.getElementById('input-order').value = d.order !== undefined ? d.order : 100;
 
-            // 数値変換
-            if (data.order) data.order = parseInt(data.order);
+    // UI変更
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.textContent = '更新する';
+    submitBtn.style.background = '#f59e0b';
+    document.getElementById('cancel-edit-btn').style.display = 'inline-block';
+
+    // スクロール
+    document.getElementById('add-project-form').scrollIntoView({ behavior: 'smooth' });
+};
+
+// フォームのリセット
+window.resetForm = () => {
+    document.getElementById('add-project-form').reset();
+    document.getElementById('edit-doc-id').value = '';
+    document.getElementById('input-order').value = 100; // ★追加: デフォルトに戻す
+    
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.textContent = 'プロジェクトを追加';
+    submitBtn.style.background = '';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+};
+
+// 送信処理
+async function handleSubmit(e, colName) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    const docId = data.docId;
+    delete data.docId;
+
+    // 数値変換
+    if (data.order) data.order = parseInt(data.order); // ★追加
             
             try {
                 if (colName === 'projects' && docId) {
