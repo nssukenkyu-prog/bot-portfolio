@@ -7,22 +7,37 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="portfolio-page">
-    <nav class="top-nav">
-        <h1 class="nav-title">🚀 Projects Portfolio</h1>
-        <div class="nav-right">
-            <a href="admin.html" class="nav-admin">🔐 管理画面</a>
+
+    <div id="lock-screen">
+        <div class="lock-card">
+            <div class="lock-icon">🔒</div>
+            <h2>Secret Portfolio</h2>
+            <p style="color:#666">閲覧パスワードを入力してください</p>
+            <form id="lock-form">
+                <input type="password" id="lock-password" class="lock-input" placeholder="Password" required>
+                <button type="submit" class="btn-primary" style="width:100%">解除する</button>
+            </form>
+            <p id="lock-error" class="lock-error"></p>
         </div>
-    </nav>
+    </div>
+    <div id="main-content" style="display: none;">
+        <nav class="top-nav">
+            <h1 class="nav-title">🚀 Projects Portfolio</h1>
+            <div class="nav-right">
+                <a href="admin.html" class="nav-admin">🔐 管理画面</a>
+            </div>
+        </nav>
 
-    <div class="container">
-        <div class="filter-section" id="filter-section"></div>
+        <div class="container">
+            <div class="filter-section" id="filter-section"></div>
 
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>データを取得中...</p>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>データを取得中...</p>
+            </div>
+
+            <div id="projects-grid" class="projects-grid"></div>
         </div>
-
-        <div id="projects-grid" class="projects-grid"></div>
     </div>
 
     <script type="module">
@@ -44,6 +59,43 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ▼▼▼ パスワード認証処理 ▼▼▼
+        const CORRECT_PASS = "scc62625353"; // 設定されたパスワード
+        const SESSION_KEY = "portfolio_unlocked";
+
+        function checkAuth() {
+            // すでに認証済みかチェック
+            if (sessionStorage.getItem(SESSION_KEY) === "true") {
+                unlockScreen();
+            }
+        }
+
+        function unlockScreen() {
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            // データの読み込み開始
+            init();
+        }
+
+        document.getElementById('lock-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('lock-password').value;
+            const errorEl = document.getElementById('lock-error');
+
+            if (input === CORRECT_PASS) {
+                sessionStorage.setItem(SESSION_KEY, "true"); // 認証状態を保存
+                unlockScreen();
+            } else {
+                errorEl.textContent = "パスワードが違います";
+                document.getElementById('lock-password').value = "";
+            }
+        });
+
+        // ページ読み込み時にチェック
+        checkAuth();
+        // ▲▲▲ 認証処理ここまで ▲▲▲
+
+
         // データ保持用
         let projectsData = [];
         let categoriesData = [];
@@ -54,6 +106,7 @@
             const grid = document.getElementById('projects-grid');
 
             try {
+                // 3つのコレクションを並列取得
                 const [catSnap, platSnap, projSnap] = await Promise.all([
                     getDocs(query(collection(db, "categories"), orderBy("order"))),
                     getDocs(collection(db, "platforms")),
@@ -69,8 +122,7 @@
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
 
-                // ★追加: ここで「表示順(order)」の昇順に並び替え！
-                // orderがないものは 999 として末尾へ
+                // 並び替え：orderが小さい順
                 projectsData.sort((a, b) => {
                     const orderA = a.order === undefined ? 999 : a.order;
                     const orderB = b.order === undefined ? 999 : b.order;
@@ -90,26 +142,21 @@
         // フィルターボタン生成
         function renderFilters() {
             const container = document.getElementById('filter-section');
-            // 「すべて」ボタン
             let html = `<button class="filter-btn active" onclick="filterProjects('all')">すべて</button>`;
             
-            // 各カテゴリーボタン
             categoriesData.forEach(cat => {
                 html += `<button class="filter-btn" onclick="filterProjects('${cat.id}')">${cat.name}</button>`;
             });
             container.innerHTML = html;
         }
 
-        // フィルタリング実行 (グローバル関数)
         window.filterProjects = (catId) => {
-            // ボタンの見た目を更新
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            
             displayProjects(catId);
         };
 
-        // プロジェクトリスト表示（横長リストデザイン）
+        // プロジェクトリスト表示
         function displayProjects(filterCatId) {
             const grid = document.getElementById('projects-grid');
             
@@ -140,7 +187,6 @@
                                     <div class="doc-icon">📄</div>
                                     <span class="platform-badge" style="background-color: ${platform.color}">${platform.name}</span>
                                 </div>
-                                
                                 <p class="project-description">${p.description || ''}</p>
                             </div>
 
@@ -158,9 +204,7 @@
                         </div>
 
                         <div class="project-side-content">
-                            <div class="thumbnail-placeholder-side">
-                                📄
-                            </div>
+                            <div class="thumbnail-placeholder-side">📄</div>
                             ${p.tags ? `
                                 <div class="project-tags">
                                     ${p.tags.split(',').map(t => `<span class="tag">${t.trim()}</span>`).join('')}
@@ -171,9 +215,6 @@
                 </div>`;
             }).join('');
         }
-
-        // 初期化実行
-        init();
     </script>
 </body>
 </html>
