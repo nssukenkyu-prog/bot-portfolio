@@ -11,19 +11,22 @@
         <a href="index.html" class="nav-back">← ホームに戻る</a>
         <h1 id="portfolio-title" class="nav-title"></h1>
         <div class="nav-right">
-            <a href="categories.html" class="nav-categories" id="categories-link">📁 カテゴリー管理</a>
-            <a href="admin.html" class="nav-admin" id="admin-link">🔐 管理画面</a>
+            <a href="https://github.com/nssukenkyu-prog/YOUR_REPO_NAME/tree/main/data" target="_blank" class="nav-admin" id="github-edit-link">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right:5px; vertical-align: text-bottom;">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                データを編集
+            </a>
         </div>
     </nav>
 
     <div class="container">
         <div class="filter-section" id="filter-section">
-            <!-- カテゴリーボタンは動的に生成 -->
-        </div>
+            </div>
 
         <div id="loading" class="loading">
             <div class="spinner"></div>
-            <p>読み込み中...</p>
+            <p>データを読み込んでいます...</p>
         </div>
         <div id="projects-grid" class="projects-grid"></div>
         <div id="error" class="error" style="display: none;"></div>
@@ -40,34 +43,48 @@
             'yuzu': '🚴‍♂️ Yuzu bot. Projects Portfolio',
             'kedo': '🔥 Kedo bot. Projects Portfolio'
         };
-        document.getElementById('portfolio-title').textContent = botNames[currentBot];
-        document.title = botNames[currentBot];
+        
+        // タイトル反映
+        const titleElement = document.getElementById('portfolio-title');
+        if (titleElement) {
+            titleElement.textContent = botNames[currentBot] || `${currentBot} Portfolio`;
+        }
+        document.title = botNames[currentBot] || 'Portfolio';
 
-        // リンクにbot情報を付与
-        document.getElementById('admin-link').href = `admin.html?bot=${currentBot}`;
-        document.getElementById('categories-link').href = `categories.html?bot=${currentBot}`;
+        // GitHub編集リンクの調整（リポジトリURLが確定したら書き換えてください）
+        // ここでは bot によって飛ぶファイルを変える例です
+        const editLink = document.getElementById('github-edit-link');
+        // editLink.href = `https://github.com/[あなたのユーザー名]/[リポジトリ名]/blob/main/data/projects_${currentBot}.json`; 
 
-        // カテゴリーを読み込み
-        function loadCategories() {
-            const storageKey = `categories_${currentBot}`;
-            const stored = localStorage.getItem(storageKey);
-            
-            if (stored) {
-                categories = JSON.parse(stored);
-            } else {
-                // デフォルトカテゴリー
+        // カテゴリーをJSONファイルから読み込み
+        async function loadCategories() {
+            try {
+                // キャッシュ対策のためにタイムスタンプを付与
+                const response = await fetch(`data/categories_${currentBot}.json?t=${new Date().getTime()}`);
+                
+                if (response.ok) {
+                    categories = await response.json();
+                } else {
+                    console.warn('カテゴリーファイルが見つかりません。デフォルトを使用します。');
+                    // ファイルがない場合のデフォルト
+                    categories = [
+                        { id: 'GAS', name: 'GAS', color: '#34A853' },
+                        { id: 'GitHub', name: 'GitHub', color: '#24292e' },
+                        { id: 'Cloudflare', name: 'Cloudflare', color: '#F38020' },
+                        { id: 'Genspark', name: 'Genspark', color: '#6366f1' },
+                        { id: 'Vercel', name: 'Vercel', color: '#000000' },
+                        { id: 'Other', name: 'その他', color: '#64748b' }
+                    ];
+                }
+                renderFilterButtons();
+            } catch (e) {
+                console.error('カテゴリー読み込みエラー:', e);
+                // エラー時もデフォルトを表示して続行
                 categories = [
-                    { id: 'GAS', name: 'GAS', color: '#34A853' },
-                    { id: 'GitHub', name: 'GitHub', color: '#24292e' },
-                    { id: 'Cloudflare', name: 'Cloudflare', color: '#F38020' },
-                    { id: 'Genspark', name: 'Genspark', color: '#6366f1' },
-                    { id: 'Vercel', name: 'Vercel', color: '#000000' },
-                    { id: 'Other', name: 'その他', color: '#64748b' }
+                        { id: 'Other', name: 'All', color: '#64748b' }
                 ];
-                localStorage.setItem(storageKey, JSON.stringify(categories));
+                renderFilterButtons();
             }
-            
-            renderFilterButtons();
         }
 
         // フィルターボタンを描画
@@ -99,28 +116,33 @@
             });
         }
 
-        // プロジェクト一覧を取得
+        // プロジェクト一覧をJSONファイルから取得
         async function loadProjects() {
             const loading = document.getElementById('loading');
             const grid = document.getElementById('projects-grid');
             const errorDiv = document.getElementById('error');
 
             try {
-                const storageKey = `portfolio_${currentBot}`;
-                const stored = localStorage.getItem(storageKey);
+                // projects_yuzu.json または projects_kedo.json を読み込む
+                const response = await fetch(`data/projects_${currentBot}.json?t=${new Date().getTime()}`);
                 
-                if (stored) {
-                    allProjects = JSON.parse(stored);
-                } else {
-                    allProjects = [];
+                if (!response.ok) {
+                    throw new Error(`データファイル(projects_${currentBot}.json)が見つかりません。GitHubのdataフォルダを確認してください。`);
                 }
+
+                allProjects = await response.json();
                 
                 loading.style.display = 'none';
                 displayProjects(allProjects);
             } catch (error) {
                 loading.style.display = 'none';
-                errorDiv.textContent = 'プロジェクトの読み込みに失敗しました: ' + error.message;
+                errorDiv.innerHTML = `
+                    <p>❌ プロジェクトの読み込みに失敗しました</p>
+                    <p class="error-detail">${error.message}</p>
+                    <p class="error-hint">管理者の方へ: dataフォルダに projects_${currentBot}.json が存在するか確認してください。</p>
+                `;
                 errorDiv.style.display = 'block';
+                console.error(error);
             }
         }
 
@@ -155,8 +177,8 @@
         function displayProjects(projects) {
             const grid = document.getElementById('projects-grid');
             
-            if (projects.length === 0) {
-                grid.innerHTML = '<div class="no-projects"><p>まだプロジェクトがありません</p><a href="admin.html?bot=' + currentBot + '" class="btn-primary">最初のプロジェクトを追加</a></div>';
+            if (!projects || projects.length === 0) {
+                grid.innerHTML = '<div class="no-projects"><p>プロジェクトデータがありません。</p></div>';
                 return;
             }
 
@@ -208,8 +230,8 @@
         }
 
         // ページ読み込み時に実行
-        loadCategories();
-        loadProjects();
+        // 並列で読み込むと速いです
+        Promise.all([loadCategories(), loadProjects()]);
     </script>
 </body>
 </html>
