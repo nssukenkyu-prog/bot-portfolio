@@ -54,26 +54,29 @@
             const grid = document.getElementById('projects-grid');
 
             try {
-                // 3つのコレクションを並列取得
                 const [catSnap, platSnap, projSnap] = await Promise.all([
                     getDocs(query(collection(db, "categories"), orderBy("order"))),
                     getDocs(collection(db, "platforms")),
                     getDocs(query(collection(db, "projects"), orderBy("createdAt", "desc")))
                 ]);
 
-                // 1. カテゴリー整理
                 categoriesData = [];
                 catSnap.forEach(doc => categoriesData.push({ id: doc.id, ...doc.data() }));
 
-                // 2. プラットフォーム整理 (IDで検索できるようにMap化)
                 platformsData = {};
                 platSnap.forEach(doc => platformsData[doc.id] = doc.data());
 
-                // 3. プロジェクト整理
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
 
-                // 画面描画
+                // ★追加: ここで「表示順(order)」の昇順に並び替え！
+                // orderがないものは 999 として末尾へ
+                projectsData.sort((a, b) => {
+                    const orderA = a.order === undefined ? 999 : a.order;
+                    const orderB = b.order === undefined ? 999 : b.order;
+                    return orderA - orderB;
+                });
+
                 renderFilters();
                 displayProjects('all');
                 loading.style.display = 'none';
