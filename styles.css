@@ -1099,3 +1099,84 @@ body {
         width: 100%;
     }
 }
+
+/* ===== 追記・修正分 ===== */
+
+/* フィルターボタン（カテゴリー） */
+.filter-btn {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-color); /* 枠線を見やすく */
+    color: var(--text-primary); /* 文字色を濃く */
+}
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* プロジェクトカード拡張 */
+.project-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+
+.creator-badge {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* リンクなしボタン（無効化状態） */
+.project-link.disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* 管理画面のタブ */
+.admin-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.tab-btn {
+    padding: 0.5rem 1.5rem;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem; /* admin-tabsのpaddingと合わせる */
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary-color);
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 4px;
+}
