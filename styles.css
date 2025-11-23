@@ -1110,16 +1110,27 @@ body {
 
 /* ===== 追記・修正分 ===== */
 
-/* フィルターボタン（カテゴリー） */
-.filter-btn {
+/* フィルターボタン（カテゴリー） - グラデーション背景用に見やすく調整 */
+.filter-section .filter-btn {
     margin-bottom: 0.5rem;
-    border: 1px solid var(--border-color); /* 枠線を見やすく */
-    color: var(--text-primary); /* 文字色を濃く */
+    /* 非アクティブ時は、半透明の白背景＋白文字でスッキリと */
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white !important; /* 強制的に白文字にする */
+    backdrop-filter: blur(5px); /* すりガラス効果 */
 }
-.filter-btn.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
+
+.filter-section .filter-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.filter-section .filter-btn.active {
+    /* アクティブ時は、白背景＋濃い青文字ではっきりと強調 */
+    background: white !important;
+    color: var(--primary-dark) !important; /* 濃い青色 */
+    border-color: white !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* プロジェクトカード拡張 */
