@@ -18,6 +18,12 @@
                 <button type="submit" class="btn-primary" style="width:100%">解除する</button>
             </form>
             <p id="lock-error" class="lock-error"></p>
+
+            <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                <a href="admin.html" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 5px;">
+                    🔐 管理者はこちら
+                </a>
+            </div>
         </div>
     </div>
 
@@ -25,8 +31,7 @@
         <nav class="top-nav">
             <h1 class="nav-title">🚀 Projects Portfolio</h1>
             <div class="nav-right">
-                <a href="admin.html" class="nav-admin">🔐 管理画面</a>
-                <button id="viewer-logout-btn" class="nav-logout" style="margin-left:10px; font-size:0.8rem;">Exit</button>
+                <button id="viewer-logout-btn" class="nav-logout" style="font-size:0.8rem;">Exit</button>
             </div>
         </nav>
 
@@ -44,11 +49,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Auth機能を追加
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ■■■ Firebase設定 (あなたのものを貼ってください) ■■■
+        // ■■■ Firebase設定 ■■■
         const firebaseConfig = {
             apiKey: "AIzaSyDQuSOlOynAMMtBhBNBoGNHToN6QL-qkX4",
             authDomain: "portfolio-db-5df49.firebaseapp.com",
@@ -61,40 +65,31 @@
         // ■■■■■■■■■■■■■■■■■■■■■■
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app); // Auth初期化
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
         // ▼▼▼ 認証ロジック ▼▼▼
-        
-        // 閲覧用アカウント (ステップ1で作ったもの)
         const VIEWER_EMAIL = "guest@portfolio.com";
 
-        // ログイン状態の監視
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // ログイン済みなら画面を表示
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
-                init(); // データ読み込み開始
+                init(); 
             } else {
-                // 未ログインならロック画面を表示
                 document.getElementById('lock-screen').style.display = 'flex';
                 document.getElementById('main-content').style.display = 'none';
             }
         });
 
-        // パスワード送信時の処理
         document.getElementById('lock-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const password = document.getElementById('lock-password').value;
             const errorEl = document.getElementById('lock-error');
-            
             errorEl.textContent = "認証中...";
 
             try {
-                // Firebase Auth で本当にログインする
                 await signInWithEmailAndPassword(auth, VIEWER_EMAIL, password);
-                // 成功すると onAuthStateChanged が反応して画面が切り替わります
             } catch (error) {
                 console.error(error);
                 errorEl.textContent = "パスワードが違います";
@@ -102,40 +97,41 @@
             }
         });
 
-        // ログアウト（Exit）ボタン
         document.getElementById('viewer-logout-btn').addEventListener('click', () => {
             signOut(auth);
             location.reload();
         });
-        // ▲▲▲ 認証ロジックここまで ▲▲▲
 
-
-        // データ保持用
-        let projectsData = [];
-        let categoriesData = [];
-        let platformsData = {};
+        // ▼▼▼ データ取得ロジック ▼▼▼
+        let projectsData = [], categoriesData = [], platformsData = {};
 
         async function init() {
             const loading = document.getElementById('loading');
-            const grid = document.getElementById('projects-grid');
-
+            
             try {
+                // ⚠️重要: インデックスエラー回避のため、一旦 orderBy を外して取得してみる
+                // これで表示されれば「インデックス未作成」が原因と確定します
+                
+                /* --- もしこれで動くなら、Firebaseコンソールでインデックス作成が必要です --- */
+                // 一旦並び替えなしで取得
                 const [catSnap, platSnap, projSnap] = await Promise.all([
-                    getDocs(query(collection(db, "categories"), orderBy("order"))),
+                    getDocs(collection(db, "categories")), 
                     getDocs(collection(db, "platforms")),
-                    getDocs(query(collection(db, "projects"), orderBy("createdAt", "desc")))
+                    getDocs(collection(db, "projects")) 
                 ]);
+                /* ------------------------------------------------------- */
 
                 categoriesData = [];
                 catSnap.forEach(doc => categoriesData.push({ id: doc.id, ...doc.data() }));
+                // JS側で並び替え（安全策）
+                categoriesData.sort((a, b) => (a.order || 0) - (b.order || 0));
 
                 platformsData = {};
                 platSnap.forEach(doc => platformsData[doc.id] = doc.data());
 
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
-
-                // 並び替え
+                // JS側で並び替え（安全策）
                 projectsData.sort((a, b) => {
                     const orderA = a.order === undefined ? 999 : a.order;
                     const orderB = b.order === undefined ? 999 : b.order;
@@ -147,13 +143,20 @@
                 loading.style.display = 'none';
 
             } catch (e) {
-                console.error(e);
-                // 権限エラーの場合
+                console.error("詳細エラー:", e);
+                
+                // 権限エラー
                 if(e.code === 'permission-denied') {
-                    alert('権限がありません。パスワードを入力してください。');
-                    signOut(auth); // 強制ログアウト
+                    alert('権限がありません。パスワードを確認してください。');
+                    signOut(auth);
+                } 
+                // インデックスエラー (重要)
+                else if (e.code === 'failed-precondition') {
+                    console.log("★重要: コンソール(F12)に表示されたリンクをクリックしてインデックスを作成してください");
+                    alert('初期設定が必要です：F12キーを押してコンソールにあるリンクをクリックしてください');
                 }
-                loading.innerHTML = `<p class="error-message">読み込みエラー<br>${e.message}</p>`;
+                
+                loading.innerHTML = `<p class="error-message">エラーが発生しました<br>${e.code}: ${e.message}</p>`;
             }
         }
 
