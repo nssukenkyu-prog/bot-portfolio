@@ -64,10 +64,13 @@
         const SESSION_KEY = "portfolio_unlocked";
 
         function checkAuth() {
-            // すでに認証済みかチェック
-            if (sessionStorage.getItem(SESSION_KEY) === "true") {
-                unlockScreen();
-            }
+            // ★★★ 以下の3行を消すと、リロードするたびにロックされます ★★★
+            
+            // if (sessionStorage.getItem(SESSION_KEY) === "true") {
+            //    unlockScreen();
+            // }
+            
+            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
         }
 
         function unlockScreen() {
