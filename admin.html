@@ -8,150 +8,221 @@
 </head>
 <body class="admin-page">
     <nav class="top-nav">
-        <a href="portfolio.html" class="nav-back" id="back-link">← ポートフォリオに戻る</a>
-        <h1 id="admin-title" class="nav-title">🔐 管理画面</h1>
+        <a href="portfolio.html" class="nav-back">← ポートフォリオに戻る</a>
+        <h1 class="nav-title">🔐 管理画面 (Firebase)</h1>
         <div class="nav-right">
-            <a href="categories.html" class="nav-categories" id="categories-link">📁 カテゴリー管理</a>
-            <button onclick="logout()" class="nav-logout">ログアウト</button>
+            <button id="logout-btn" class="nav-logout" style="display: none;">ログアウト</button>
         </div>
     </nav>
 
-    <!-- 認証画面 -->
     <div id="auth-section" class="auth-section">
         <div class="auth-card">
             <div class="auth-icon">🔒</div>
-            <h2>管理者認証</h2>
-            <p class="auth-subtitle">パスワードを入力してください</p>
-            <input type="password" id="password-input" placeholder="パスワード" />
-            <button onclick="authenticate()" class="btn-primary">ログイン</button>
+            <h2>管理者ログイン</h2>
+            <p class="auth-subtitle">Firebaseに登録した情報を入力</p>
+            <form id="login-form">
+                <input type="email" id="email" placeholder="メールアドレス" required>
+                <input type="password" id="password" placeholder="パスワード" required>
+                <button type="submit" class="btn-primary">ログイン</button>
+            </form>
             <p id="auth-error" class="error-message"></p>
         </div>
     </div>
 
-    <!-- 管理コンテンツ -->
     <div id="admin-content" class="container" style="display: none;">
-        <!-- 新規追加フォーム -->
         <div class="admin-panel">
             <h2>✨ 新しいプロジェクトを追加</h2>
             <form id="add-form" class="project-form">
                 <div class="form-row">
                     <div class="form-group">
                         <label>タイトル *</label>
-                        <input type="text" name="title" required placeholder="プロジェクト名を入力" />
+                        <input type="text" name="title" required placeholder="プロジェクト名" />
                     </div>
                     <div class="form-group">
-                        <label>カテゴリー</label>
-                        <select name="platform" id="platform-select">
-                            <!-- 動的に生成 -->
+                        <label>Bot選択 *</label>
+                        <select name="bot">
+                            <option value="yuzu">🚴‍♂️ Yuzu bot</option>
+                            <option value="kedo">🔥 Kedo bot</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label>説明</label>
-                    <textarea name="description" rows="3" placeholder="プロジェクトの説明を入力"></textarea>
+                    <textarea name="description" rows="3" placeholder="説明文"></textarea>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>公開URL *</label>
-                        <input type="url" name="url" required placeholder="https://example.com" />
-                        <small class="form-hint">ユーザーがアクセスするURL</small>
+                        <label>カテゴリー</label>
+                        <select name="platform">
+                            <option value="GAS">GAS</option>
+                            <option value="GitHub">GitHub</option>
+                            <option value="Cloudflare">Cloudflare</option>
+                            <option value="Genspark">Genspark</option>
+                            <option value="Vercel">Vercel</option>
+                            <option value="Other">その他</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>編集画面URL（任意）</label>
-                        <input type="url" name="editUrl" placeholder="https://script.google.com/..." />
-                        <small class="form-hint">管理者用の編集画面URL</small>
+                        <label>タグ (カンマ区切り)</label>
+                        <input type="text" name="tags" placeholder="例: GAS, TypeScript" />
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label>サムネイル画像URL（Google Drive推奨）</label>
-                    <input type="url" name="thumbnail" placeholder="Google Driveの共有リンクまたは画像URL" />
-                    <small class="form-hint">💡 Google Driveの場合: 「共有」→「リンクを知っている全員」→ リンクをコピー</small>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>公開URL *</label>
+                        <input type="url" name="url" required placeholder="https://..." />
+                    </div>
+                    <div class="form-group">
+                        <label>編集URL (任意)</label>
+                        <input type="url" name="editUrl" placeholder="https://..." />
+                    </div>
                 </div>
-                
+
                 <div class="form-group">
-                    <label>タグ（カンマ区切り）</label>
-                    <input type="text" name="tags" placeholder="例: React, TypeScript, API" />
+                    <label>サムネイル画像URL</label>
+                    <input type="url" name="thumbnail" placeholder="Google Driveのリンクなど" />
                 </div>
-                
-                <button type="submit" class="btn-primary">
-                    <span>追加する</span>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z"/>
-                    </svg>
-                </button>
+
+                <button type="submit" class="btn-primary">追加する</button>
             </form>
         </div>
 
-        <!-- プロジェクト一覧 -->
         <div class="admin-panel">
             <h2>📋 登録済みプロジェクト</h2>
             <div id="admin-projects-list" class="admin-list"></div>
         </div>
     </div>
 
-    <!-- 編集モーダル -->
-    <div id="edit-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>✏️ プロジェクトを編集</h2>
-                <button onclick="closeEditModal()" class="modal-close">×</button>
-            </div>
-            <form id="edit-form" class="project-form">
-                <input type="hidden" id="edit-id" />
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>タイトル *</label>
-                        <input type="text" id="edit-title" required />
-                    </div>
-                    <div class="form-group">
-                        <label>カテゴリー</label>
-                        <select id="edit-platform">
-                            <!-- 動的に生成 -->
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>説明</label>
-                    <textarea id="edit-description" rows="3"></textarea>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>公開URL *</label>
-                        <input type="url" id="edit-url" required />
-                        <small class="form-hint">ユーザーがアクセスするURL</small>
-                    </div>
-                    <div class="form-group">
-                        <label>編集画面URL（任意）</label>
-                        <input type="url" id="edit-editUrl" placeholder="https://script.google.com/..." />
-                        <small class="form-hint">管理者用の編集画面URL</small>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>サムネイル画像URL（Google Drive推奨）</label>
-                    <input type="url" id="edit-thumbnail" placeholder="Google Driveの共有リンクまたは画像URL" />
-                    <small class="form-hint">💡 Google Driveの場合: 「共有」→「リンクを知っている全員」→ リンクをコピー</small>
-                </div>
-                
-                <div class="form-group">
-                    <label>タグ（カンマ区切り）</label>
-                    <input type="text" id="edit-tags" />
-                </div>
-                
-                <div class="modal-actions">
-                    <button type="button" onclick="closeEditModal()" class="btn-secondary">キャンセル</button>
-                    <button type="submit" class="btn-primary">更新する</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <script src="admin.js"></script>
+        // ■■■ 設定エリア (portfolio.htmlと同じものを貼る) ■■■
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxxxxxxxxxxxxxxxxxxxxxxx",
+            authDomain: "portfolio-db.firebaseapp.com",
+            projectId: "portfolio-db",
+            storageBucket: "portfolio-db.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:xxxxxxxxxxxx"
+        };
+        // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ログイン処理
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('auth-error');
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                errorEl.textContent = '';
+            } catch (error) {
+                errorEl.textContent = 'ログイン失敗: ' + error.message;
+            }
+        });
+
+        // ログアウト処理
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // 認証状態の監視
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'block';
+                loadAdminProjects();
+            } else {
+                document.getElementById('auth-section').style.display = 'flex';
+                document.getElementById('admin-content').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'none';
+            }
+        });
+
+        // データ追加
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // 追加日時を保存（並び替え用）
+            data.createdAt = new Date().toISOString();
+
+            try {
+                await addDoc(collection(db, "projects"), data);
+                alert('✨ 追加しました！');
+                e.target.reset();
+                loadAdminProjects();
+            } catch (error) {
+                alert('エラー: ' + error.message);
+            }
+        });
+
+        // 一覧取得
+        async function loadAdminProjects() {
+            const listEl = document.getElementById('admin-projects-list');
+            listEl.innerHTML = '<p>読み込み中...</p>';
+            
+            try {
+                const q = query(collection(db, "projects"), orderBy("createdAt", "desc")); // 新しい順
+                const querySnapshot = await getDocs(q); // エラーが出る場合は orderBy を外す
+                
+                if (querySnapshot.empty) {
+                    listEl.innerHTML = '<p>データがありません</p>';
+                    return;
+                }
+
+                let html = '';
+                querySnapshot.forEach((doc) => {
+                    const p = doc.data();
+                    html += `
+                        <div class="admin-item">
+                            <div class="admin-item-info">
+                                <h3>${p.title} <span style="font-size:0.8em; color:#666">(${p.bot})</span></h3>
+                                <p>${p.description || ''}</p>
+                            </div>
+                            <div class="admin-item-actions">
+                                <button class="btn-delete" data-id="${doc.id}">削除</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                listEl.innerHTML = html;
+
+                // 削除ボタンのイベント設定
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        if(confirm('本当に削除しますか？')) {
+                            await deleteDoc(doc(db, "projects", btn.dataset.id));
+                            alert('削除しました');
+                            loadAdminProjects();
+                        }
+                    });
+                });
+
+            } catch (error) {
+                console.error(error);
+                // インデックスエラー回避のため、単純取得にフォールバック
+                if(error.message.includes("index")) {
+                    const snapshot = await getDocs(collection(db, "projects"));
+                    // ... (同じ表示処理)
+                    alert('初回のため並び替えインデックスが作成されていません。しばらくすると治ります。');
+                }
+                listEl.innerHTML = '読み込みエラー';
+            }
+        }
+    </script>
 </body>
 </html>
