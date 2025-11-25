@@ -58,7 +58,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ▼ パスワード認証（JSのみ）▼
+        // ▼ パスワード認証（JSのみ）
         const CORRECT_PASS = "scc62625353";
 
         document.getElementById('lock-form').addEventListener('submit', (e) => {
@@ -66,13 +66,13 @@
             if (document.getElementById('lock-password').value === CORRECT_PASS) {
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
-                init(); // 画面表示後にデータ取得
+                init(); 
             } else {
                 document.getElementById('lock-error').textContent = "パスワードが違います";
             }
         });
 
-        // ▼ データ取得 ▼
+        // ▼ データ取得
         let projectsData = [], categoriesData = [], platformsData = {};
 
         async function init() {
@@ -116,7 +116,7 @@
             displayProjects(id);
         };
 
-        // ▼▼▼ ここを修正（3パターン対応） ▼▼▼
+        // ▼▼▼ プロジェクト表示（3パターンリンク対応） ▼▼▼
         function displayProjects(catId) {
             const grid = document.getElementById('projects-grid');
             const targets = catId === 'all' ? projectsData : projectsData.filter(p => p.categoryId === catId);
@@ -128,7 +128,7 @@
             grid.innerHTML = targets.map(p => {
                 const plat = platformsData[p.platformId] || { name: '-', color: '#ccc' };
                 
-                // リンクの有無チェック
+                // リンク確認
                 const hasLp = !!p.url;
                 const hasSheet = !!p.spreadsheetUrl;
                 const hasEdit = !!p.editUrl;
@@ -148,32 +148,28 @@
                                 ${!hasAnyLink ? `<span class="project-link disabled">リンクなし</span>` : ''}
 
                                 ${hasLp ? `
-                                    <a href="${p.url}" target="_blank" class="project-link">
+                                    <a href="${p.url}" target="_blank" class="project-link" title="公開サイト">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                         LP
                                     </a>
                                 ` : ''}
 
                                 ${hasSheet ? `
-                                    <a href="${p.spreadsheetUrl}" target="_blank" class="project-link" style="color:#16a34a; border-color:#16a34a;">
+                                    <a href="${p.spreadsheetUrl}" target="_blank" class="project-link" style="color:#16a34a; border-color:#16a34a;" title="スプレッドシート">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line></svg>
                                         Sheet
                                     </a>
                                 ` : ''}
 
                                 ${hasEdit ? `
-                                    <a href="${p.editUrl}" target="_blank" class="project-link project-link-edit">
+                                    <a href="${p.editUrl}" target="_blank" class="project-link project-link-edit" title="編集画面/コード">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                         Edit
                                     </a>
                                 ` : ''}
                             </div>
                         </div>
-                        
-                        <div class="project-side-content">
-                            <div class="thumbnail-placeholder-side">📄</div>
-                            ${p.tags ? `<div class="project-tags">${p.tags.split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join('')}</div>` : ''}
-                        </div>
+                        <div class="project-side-content"><div class="thumbnail-placeholder-side">📄</div>${p.tags ? `<div class="project-tags">${p.tags.split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join('')}</div>` : ''}</div>
                     </div>
                 </div>`;
             }).join('');
