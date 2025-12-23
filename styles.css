@@ -105,13 +105,14 @@ body {
     flex-wrap: wrap;
     /* Sticky setting */
     position: sticky;
-    top: 70px;
-    /* nav height approx */
-    z-index: 90;
+    top: 90px;
+    z-index: 95;
+    /* Adjust margin to avoid gap scrolling issues */
+    margin-top: 0;
+
     padding: 1.5rem;
     border-radius: 0 0 20px 20px;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.95) 0%, rgba(124, 58, 237, 0.95) 100%);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 1.0) 0%, rgba(124, 58, 237, 1.0) 100%);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
