@@ -34,9 +34,9 @@
 
         <div class="container">
             <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab('projects')">📂 プロジェクト</button>
-                <button class="tab-btn" onclick="switchTab('categories')">🏷️ カテゴリー</button>
-                <button class="tab-btn" onclick="switchTab('platforms')">🔧 プラットフォーム</button>
+                <button class="tab-btn active" onclick="switchTab('projects', this)">📂 プロジェクト</button>
+                <button class="tab-btn" onclick="switchTab('categories', this)">🏷️ カテゴリー</button>
+                <button class="tab-btn" onclick="switchTab('platforms', this)">🔧 プラットフォーム</button>
             </div>
 
             <div id="tab-projects" class="tab-content">
@@ -310,11 +310,11 @@
             });
         }
 
-        window.switchTab = (id) => {
+        window.switchTab = (id, btn) => {
             document.querySelectorAll('.tab-content').forEach(e => e.style.display = 'none');
             document.getElementById(`tab-${id}`).style.display = 'block';
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            if (btn) btn.classList.add('active');
         };
         window.saveOrder = async () => {
             const batch = writeBatch(db);
