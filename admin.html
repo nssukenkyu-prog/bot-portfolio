@@ -284,7 +284,7 @@
                     window.projectsMap[d.id] = d;
                     const cat = window.categoriesMap[d.categoryId]?.name || '-';
                     list.innerHTML += `
-                        <div class="admin-item" draggable="true" data-id="${d.id}">
+                        <div class="admin-item" draggable="true" data-id="${d.id}" id="proj-row-${d.id}">
                             <div class="admin-item-info"><h3>☰ ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat}</p></div>
                             <div class="admin-item-actions"><button class="btn-edit" onclick="editProject('${d.id}')" style="background:#f59e0b;">編集</button><button class="btn-delete" onclick="del('projects','${d.id}')">削除</button></div>
                         </div>`;
@@ -312,7 +312,7 @@
 
         window.switchTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(e => e.style.display = 'none');
-            document.getElementById(`tab-${id}`).style.display = 'block';
+            document.getElementById(`tab - ${id} `).style.display = 'block';
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
         };
@@ -354,7 +354,7 @@
             document.getElementById('cancel-edit-btn').style.display = 'inline-block';
 
             // Inline Edit Logic: Move form to after the row
-            const row = document.querySelector(`.admin-item[data-id="${id}"]`);
+            const row = document.getElementById(`proj-row-${id}`);
             const form = document.getElementById('add-project-form');
             if (row && form) {
                 // Create or get wrapper
