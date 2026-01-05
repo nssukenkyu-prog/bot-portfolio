@@ -214,7 +214,14 @@ body {
     padding: 2px 8px;
     border-radius: 4px;
     font-weight: normal;
-    /* Removed absolute positioning to respect flex layout */
+    display: inline-block !important;
+    /* Force visibility */
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin-left: 10px;
+    /* Ensure spacing */
+    flex-shrink: 0;
+    /* Prevent collapsing */
 }
 
 .creator-badge {
