@@ -167,12 +167,11 @@
 
                 return `
                 <div class="project-card">
-                    <div class="project-header-row">
+                    <div class="project-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
                         <div class="project-title-group">
                             <h3>
                                 <span class="display-id">No.${p._globalIndex} <span style="font-size:0.8em;opacity:0.7;">(#${p._catIndex})</span></span>
                                 ${p.title}
-                                ${p.releaseDate ? `<span class="release-date">${p.releaseDate}</span>` : ''}
                             </h3>
                             ${p.creators
                         ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
@@ -180,6 +179,7 @@
                             ${codePlat ? `<span class="platform-badge-small" style="background:${codePlat.color}">${codePlat.name}</span>` : ''}
                             <span class="platform-badge-small" style="background:${deployPlat.color}">${deployPlat.name}</span>
                         </div>
+                        ${p.releaseDate ? `<span class="release-date" style="font-size:0.85rem; color:#64748b; white-space:nowrap; margin-left:10px;">${p.releaseDate}</span>` : ''}
                     </div>
 
                     <p class="project-description">${p.description || ''}</p>

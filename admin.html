@@ -272,6 +272,17 @@
             // プロジェクト
             onSnapshot(query(collection(db, "projects"), orderBy("createdAt", "desc")), (snap) => {
                 const list = document.getElementById('admin-projects-list');
+
+                // FIX: Rescue the form if it is currently inside the list (inline editing)
+                const form = document.getElementById('add-project-form');
+                const defaultContainer = document.getElementById('default-project-form-container');
+                if (form && defaultContainer && list.contains(form)) {
+                    defaultContainer.appendChild(form); // Move back to safety
+                    // Remove wrapper if exists
+                    const wrapper = document.getElementById('inline-edit-wrapper');
+                    if (wrapper) wrapper.remove();
+                }
+
                 list.innerHTML = '';
                 let projects = [];
                 snap.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
