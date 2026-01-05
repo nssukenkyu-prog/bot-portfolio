@@ -314,7 +314,7 @@
                         const cat = window.categoriesMap[d.categoryId]?.name || '-';
                         list.innerHTML += `
                             <div class="admin-item" draggable="true" data-id="${d.id}" id="proj-row-${d.id}">
-                                <div class="admin-item-info"><h3>☰ No.${d._globalIndex} ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat}</p></div>
+                                <div class="admin-item-info"><h3>☰ ${d._globalIndex}. ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat}</p></div>
                                 <div class="admin-item-actions"><button class="btn-edit" onclick="editProject('${d.id}')" style="background:#f59e0b;">編集</button><button class="btn-delete" onclick="del('projects','${d.id}')">削除</button></div>
                             </div>`;
                     });
