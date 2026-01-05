@@ -124,10 +124,14 @@
         function displayProjects(filterCatId) {
             const grid = document.getElementById('projects-grid');
 
-            // フィルタリング
-            const targets = filterCatId === 'all'
-                ? projectsData
-                : projectsData.filter(p => p.categoryId === filterCatId);
+            // フィルタリングと並び替え
+            let targets = [];
+            if (filterCatId === 'all') {
+                targets = [...projectsData].sort((a, b) => a._globalIndex - b._globalIndex); // 作成順(古い順) = 番号順
+            } else {
+                targets = projectsData.filter(p => p.categoryId === filterCatId);
+                targets.sort((a, b) => (a.order || 999) - (b.order || 999)); // 管理者指定順
+            }
 
             if (targets.length === 0) {
                 grid.innerHTML = '<div class="no-projects"><p>プロジェクトがありません</p></div>';
@@ -146,6 +150,8 @@
 
                 // Creation-numbering (Always Global)
                 const displayNum = p._globalIndex;
+                // Show number ONLY in 'all' view
+                const showNum = (filterCatId === 'all');
 
                 return `
                 <div class="project-card">
@@ -167,7 +173,7 @@
                         : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
                                 </div>
                                 <h3 style="margin:0;">
-                                    <span class="display-id">${displayNum}</span>
+                                    ${showNum ? `<span class="display-id">${displayNum}</span>` : ''}
                                     ${p.title}
                                 </h3>
                             </div>
