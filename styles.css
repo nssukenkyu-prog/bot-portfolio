@@ -196,8 +196,6 @@ body {
     gap: 0.5rem;
     flex-wrap: wrap;
     position: relative;
-    padding-right: 80px;
-    /* Space for date */
 }
 
 .display-id {
@@ -214,11 +212,9 @@ body {
     color: var(--text-secondary);
     background: #f1f5f9;
     padding: 2px 8px;
-    border-radius: 12px;
-    position: absolute;
-    top: 0;
-    right: 0;
+    border-radius: 4px;
     font-weight: normal;
+    /* Removed absolute positioning to respect flex layout */
 }
 
 .creator-badge {
