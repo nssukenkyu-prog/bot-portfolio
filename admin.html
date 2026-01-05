@@ -49,7 +49,7 @@
                     <div id="admin-projects-list" class="admin-list"></div>
                 </div>
 
-                <div class="admin-panel" style="margin-top: 2rem;">
+                <div class="admin-panel" style="margin-top: 2rem;" id="default-project-form-container">
                     <h2>✨ 追加・編集</h2>
                     <form id="add-project-form" class="project-form">
                         <input type="hidden" name="docId" id="edit-doc-id">
@@ -352,7 +352,30 @@
             // UI更新
             document.getElementById('submit-btn').textContent = '更新';
             document.getElementById('cancel-edit-btn').style.display = 'inline-block';
-            document.getElementById('add-project-form').scrollIntoView({ behavior: 'smooth' });
+
+            // Inline Edit Logic: Move form to after the row
+            const row = document.querySelector(`.admin-item[data-id="${id}"]`);
+            const form = document.getElementById('add-project-form');
+            if (row && form) {
+                // Create or get wrapper
+                let wrapper = document.getElementById('inline-edit-wrapper');
+                if (!wrapper) {
+                    wrapper = document.createElement('div');
+                    wrapper.id = 'inline-edit-wrapper';
+                    wrapper.style.padding = '1.5rem';
+                    wrapper.style.background = '#fef3c7'; // Light yellow background
+                    wrapper.style.border = '2px dashed #f59e0b';
+                    wrapper.style.borderRadius = '12px';
+                    wrapper.style.marginTop = '1rem';
+                    wrapper.style.marginBottom = '1rem';
+                }
+                wrapper.innerHTML = ''; // Clear prev content if any (form is usually moved not cloned, but purely wrapper cleanup)
+                wrapper.appendChild(form);
+                row.after(wrapper);
+                wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                document.getElementById('add-project-form').scrollIntoView({ behavior: 'smooth' });
+            }
         };
 
         // カテゴリー編集
@@ -387,6 +410,15 @@
                 document.getElementById('edit-doc-id').value = '';
                 document.getElementById('submit-btn').textContent = '追加';
                 document.getElementById('cancel-edit-btn').style.display = 'none';
+
+                // Return form to default container
+                const form = document.getElementById('add-project-form');
+                const defaultContainer = document.getElementById('default-project-form-container');
+                const wrapper = document.getElementById('inline-edit-wrapper');
+                if (form && defaultContainer) {
+                    defaultContainer.appendChild(form);
+                }
+                if (wrapper) wrapper.remove();
             } else if (type === 'category') {
                 document.getElementById('add-category-form').reset();
                 document.getElementById('edit-cat-id').value = '';
