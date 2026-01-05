@@ -312,7 +312,7 @@
 
         window.switchTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(e => e.style.display = 'none');
-            document.getElementById(`tab - ${id} `).style.display = 'block';
+            document.getElementById(`tab-${id}`).style.display = 'block';
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
         };
