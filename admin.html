@@ -224,7 +224,12 @@
         // データ読み込み (認証後に呼び出されるため、ここでは即時実行しない)
         // subscribeData(); 
 
+        window.isSubscribed = false;
+
         function subscribeData() {
+            if (window.isSubscribed) return;
+            window.isSubscribed = true;
+
             // カテゴリー
             onSnapshot(query(collection(db, "categories"), orderBy("order")), (snap) => {
                 const list = document.getElementById('admin-categories-list');
@@ -271,41 +276,46 @@
             });
             // プロジェクト
             onSnapshot(query(collection(db, "projects"), orderBy("createdAt", "desc")), (snap) => {
-                const list = document.getElementById('admin-projects-list');
+                try {
+                    const list = document.getElementById('admin-projects-list');
 
-                // FIX: Unconditionally move form to safety before clearing list
-                const form = document.getElementById('add-project-form');
-                const defaultContainer = document.getElementById('default-project-form-container');
-                if (form && defaultContainer) {
-                    defaultContainer.appendChild(form);
-                    // Remove wrapper if exists
-                    const wrapper = document.getElementById('inline-edit-wrapper');
-                    if (wrapper) wrapper.remove();
+                    // FIX: Unconditionally move form to safety before clearing list
+                    const form = document.getElementById('add-project-form');
+                    const defaultContainer = document.getElementById('default-project-form-container');
+                    if (form && defaultContainer) {
+                        defaultContainer.appendChild(form);
+                        // Remove wrapper if exists
+                        const wrapper = document.getElementById('inline-edit-wrapper');
+                        if (wrapper) wrapper.remove();
+                    }
+
+                    list.innerHTML = '';
+                    let projects = [];
+                    snap.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
+                    projects.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+                    // Calculate Category Indices
+                    const catCounts = {};
+                    projects.forEach(p => {
+                        if (!catCounts[p.categoryId]) catCounts[p.categoryId] = 0;
+                        catCounts[p.categoryId]++;
+                        p._catIndex = catCounts[p.categoryId];
+                    });
+
+                    projects.forEach((d, i) => {
+                        window.projectsMap[d.id] = d;
+                        const cat = window.categoriesMap[d.categoryId]?.name || '-';
+                        list.innerHTML += `
+                            <div class="admin-item" draggable="true" data-id="${d.id}" id="proj-row-${d.id}">
+                                <div class="admin-item-info"><h3>☰ No.${i + 1} ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat} (No.${d._catIndex})</p></div>
+                                <div class="admin-item-actions"><button class="btn-edit" onclick="editProject('${d.id}')" style="background:#f59e0b;">編集</button><button class="btn-delete" onclick="del('projects','${d.id}')">削除</button></div>
+                            </div>`;
+                    });
+                    setupDragAndDrop();
+                } catch (e) {
+                    console.error("Project render error:", e);
+                    alert("プロジェクト一覧の表示中にエラーが発生しました: " + e.message);
                 }
-
-                list.innerHTML = '';
-                let projects = [];
-                snap.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
-                projects.sort((a, b) => (a.order || 999) - (b.order || 999));
-
-                // Calculate Category Indices
-                const catCounts = {};
-                projects.forEach(p => {
-                    if (!catCounts[p.categoryId]) catCounts[p.categoryId] = 0;
-                    catCounts[p.categoryId]++;
-                    p._catIndex = catCounts[p.categoryId];
-                });
-
-                projects.forEach((d, i) => {
-                    window.projectsMap[d.id] = d;
-                    const cat = window.categoriesMap[d.categoryId]?.name || '-';
-                    list.innerHTML += `
-                        <div class="admin-item" draggable="true" data-id="${d.id}" id="proj-row-${d.id}">
-                            <div class="admin-item-info"><h3>☰ No.${i + 1} ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat} (No.${d._catIndex})</p></div>
-                            <div class="admin-item-actions"><button class="btn-edit" onclick="editProject('${d.id}')" style="background:#f59e0b;">編集</button><button class="btn-delete" onclick="del('projects','${d.id}')">削除</button></div>
-                        </div>`;
-                });
-                setupDragAndDrop();
             });
         }
 
