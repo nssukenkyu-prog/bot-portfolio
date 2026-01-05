@@ -135,6 +135,9 @@
                 const hasForm = !!p.formUrl;
                 const hasAnyLink = hasLp || hasSheet || hasEdit || hasForm;
 
+                // Context-Aware Numbering
+                const displayNum = (filterCatId === 'all') ? p._globalIndex : p._catIndex;
+
                 return `
                 <div class="project-card">
                     <div class="project-thumbnail">
@@ -147,18 +150,20 @@
                         </div>
                     </div>
                     <div class="project-content">
-                        <div class="project-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
-                            <div class="project-meta" style="margin-bottom:0;">
-                                ${p.creators
+                        <div class="project-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap:10px;">
+                            <div class="project-title-group" style="flex:1;">
+                                <div class="project-meta" style="margin-bottom:0.2rem;">
+                                    ${p.creators
                         ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
                         : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
+                                </div>
+                                <h3 style="margin:0;">
+                                    <span class="display-id">No.${displayNum}</span>
+                                    ${p.title}
+                                </h3>
                             </div>
-                            ${p.releaseDate ? `<span class="release-date" style="font-size:0.85rem; color:#64748b;">${p.releaseDate}</span>` : ''}
+                            ${p.releaseDate ? `<div class="release-date" style="font-size:0.85rem; color:#64748b; white-space:nowrap; margin-top:5px;">${p.releaseDate}</div>` : ''}
                         </div>
-                        <h3>
-                            <span class="display-id">No.${p._globalIndex} <span style="font-size:0.8em;opacity:0.7;">(No.${p._catIndex})</span></span>
-                            ${p.title}
-                        </h3>
                         <p class="project-description">${p.description || ''}</p>
                         
                         ${p.tags ? `<div class="project-tags">${p.tags.split(',').map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
