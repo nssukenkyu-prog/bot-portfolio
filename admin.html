@@ -250,8 +250,13 @@
             // プラットフォーム
             onSnapshot(query(collection(db, "platforms"), orderBy("name")), (snap) => {
                 const list = document.getElementById('admin-platforms-list');
-                // The single select 'project-platform-select' is gone, we now use 'project-code-platform-select' and 'project-deploy-platform-select'
+                const codeSel = document.getElementById('project-code-platform-select');
+                const deploySel = document.getElementById('project-deploy-platform-select');
+
                 list.innerHTML = '';
+                codeSel.innerHTML = '<option value="">選択</option>';
+                deploySel.innerHTML = '<option value="">選択</option>';
+
                 window.platformsMap = {};
                 snap.forEach(doc => {
                     const d = doc.data(); window.platformsMap[doc.id] = d;
@@ -263,7 +268,8 @@
                                 <button class="btn-delete" onclick="del('platforms','${doc.id}')">削除</button>
                             </div>
                         </div>`;
-                    sel.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
+                    codeSel.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
+                    deploySel.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
                 });
             });
             // プロジェクト
