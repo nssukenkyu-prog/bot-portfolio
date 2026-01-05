@@ -294,20 +294,27 @@
                     snap.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
                     projects.sort((a, b) => (a.order || 999) - (b.order || 999));
 
-                    // Calculate Category Indices
-                    const catCounts = {};
-                    projects.forEach(p => {
-                        if (!catCounts[p.categoryId]) catCounts[p.categoryId] = 0;
-                        catCounts[p.categoryId]++;
-                        p._catIndex = catCounts[p.categoryId];
+                    // 1. Assign Creation-Based IDs (Oldest = 1)
+                    const sortedByDate = [...projects].sort((a, b) => {
+                        const dateA = new Date(a.createdAt).getTime();
+                        const dateB = new Date(b.createdAt).getTime();
+                        return dateA - dateB;
                     });
+                    const idMap = {};
+                    sortedByDate.forEach((p, i) => {
+                        idMap[p.id] = i + 1; // No.1 is oldest
+                    });
+                    projects.forEach(p => p._globalIndex = idMap[p.id]);
+
+                    // 2. Sort for Display
+                    projects.sort((a, b) => (a.order || 999) - (b.order || 999));
 
                     projects.forEach((d, i) => {
                         window.projectsMap[d.id] = d;
                         const cat = window.categoriesMap[d.categoryId]?.name || '-';
                         list.innerHTML += `
                             <div class="admin-item" draggable="true" data-id="${d.id}" id="proj-row-${d.id}">
-                                <div class="admin-item-info"><h3>☰ No.${i + 1} ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat} (No.${d._catIndex})</p></div>
+                                <div class="admin-item-info"><h3>☰ No.${d._globalIndex} ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat}</p></div>
                                 <div class="admin-item-actions"><button class="btn-edit" onclick="editProject('${d.id}')" style="background:#f59e0b;">編集</button><button class="btn-delete" onclick="del('projects','${d.id}')">削除</button></div>
                             </div>`;
                     });

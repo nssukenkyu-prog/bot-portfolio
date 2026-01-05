@@ -108,14 +108,20 @@
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
 
-                // sort and assign indices
-                projectsData.sort((a, b) => (a.order || 999) - (b.order || 999));
-                const catCounts = {};
-                projectsData.forEach((p, i) => {
-                    p._globalIndex = i + 1;
-                    if (!catCounts[p.categoryId]) catCounts[p.categoryId] = 0;
-                    catCounts[p.categoryId]++;
-                    p._catIndex = catCounts[p.categoryId];
+                // 1. Assign Creation-Based IDs (Oldest = 1)
+                const sortedByDate = [...projectsData].sort((a, b) => {
+                    const dateA = new Date(a.createdAt).getTime();
+                    const dateB = new Date(b.createdAt).getTime();
+                    return dateA - dateB;
+                });
+                const idMap = {};
+                sortedByDate.forEach((p, i) => {
+                    idMap[p.id] = i + 1; // No.1 is oldest
+                });
+
+                // 2. Apply IDs to original data
+                projectsData.forEach(p => {
+                    p._globalIndex = idMap[p.id];
                 });
                 // 表示順(order)で並び替え
                 projectsData.sort((a, b) => (a.order || 999) - (b.order || 999));
@@ -165,8 +171,8 @@
                 const hasForm = !!p.formUrl;
                 const hasAnyLink = hasLp || hasSheet || hasEdit || hasForm;
 
-                // Context-Aware Numbering
-                const displayNum = (catId === 'all') ? p._globalIndex : p._catIndex;
+                // Creation-numbering (Always Global)
+                const displayNum = p._globalIndex;
 
                 return `
                 <div class="project-card">
