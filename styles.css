@@ -191,6 +191,34 @@ body {
     color: var(--text-primary);
     font-weight: 700;
     line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: relative;
+    padding-right: 80px;
+    /* Space for date */
+}
+
+.display-id {
+    font-family: monospace;
+    background: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.release-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 12px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-weight: normal;
 }
 
 .creator-badge {

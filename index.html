@@ -116,7 +116,8 @@
             }
 
             grid.innerHTML = targets.map(p => {
-                const platform = platformsData[p.platformId] || { name: 'Unknown', color: '#ccc' };
+                const deployPlatform = platformsData[p.deployPlatformId || p.platformId] || { name: 'Unknown', color: '#ccc' };
+                const codePlatform = platformsData[p.codePlatformId] || null;
                 const thumbUrl = convertGoogleDriveUrl(p.thumbnail);
                 const hasLp = !!p.url;
                 const hasSheet = !!p.spreadsheetUrl;
@@ -131,7 +132,8 @@
                         ? `<img src="${thumbUrl}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>📄</div>'">`
                         : `<div class="thumbnail-placeholder">📄</div>`}
                         <div class="thumbnail-overlay">
-                            <span class="platform-badge" style="background:${platform.color}">${platform.name}</span>
+                            ${codePlatform ? `<span class="platform-badge" style="background:${codePlatform.color}">${codePlatform.name}</span>` : ''}
+                            <span class="platform-badge" style="background:${deployPlatform.color}">${deployPlatform.name}</span>
                         </div>
                     </div>
                     <div class="project-content">
@@ -140,7 +142,11 @@
                         ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
                         : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
                         </div>
-                        <h3>${p.title}</h3>
+                        <h3>
+                            ${p.displayId ? `<span class="display-id">${p.displayId}</span>` : ''}
+                            ${p.title}
+                            ${p.releaseDate ? `<span class="release-date">${p.releaseDate}</span>` : ''}
+                        </h3>
                         <p class="project-description">${p.description || ''}</p>
                         
                         ${p.tags ? `<div class="project-tags">${p.tags.split(',').map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}

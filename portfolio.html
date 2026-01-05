@@ -145,7 +145,8 @@
             }
 
             grid.innerHTML = targets.map(p => {
-                const plat = platformsData[p.platformId] || { name: '-', color: '#ccc' };
+                const deployPlat = platformsData[p.deployPlatformId || p.platformId] || { name: '-', color: '#ccc' };
+                const codePlat = platformsData[p.codePlatformId] || null;
 
                 // リンクの有無チェック
                 const hasLp = !!p.url;
@@ -158,11 +159,16 @@
                 <div class="project-card">
                     <div class="project-header-row">
                         <div class="project-title-group">
-                            <h3>${p.title}</h3>
-                            ${p.creators 
-                                ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('') 
-                                : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
-                            <span class="platform-badge-small" style="background:${plat.color}">${plat.name}</span>
+                            <h3>
+                                ${p.displayId ? `<span class="display-id">${p.displayId}</span>` : ''}
+                                ${p.title}
+                                ${p.releaseDate ? `<span class="release-date">${p.releaseDate}</span>` : ''}
+                            </h3>
+                            ${p.creators
+                        ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
+                        : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
+                            ${codePlat ? `<span class="platform-badge-small" style="background:${codePlat.color}">${codePlat.name}</span>` : ''}
+                            <span class="platform-badge-small" style="background:${deployPlat.color}">${deployPlat.name}</span>
                         </div>
                     </div>
 
