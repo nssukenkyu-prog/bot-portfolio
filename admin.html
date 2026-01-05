@@ -249,9 +249,10 @@
             });
             // プラットフォーム
             onSnapshot(query(collection(db, "platforms"), orderBy("name")), (snap) => {
-                const sel = document.getElementById('project-category-select');
-                list.innerHTML = ''; sel.innerHTML = '<option value="">選択</option>';
-                window.categoriesMap = {};
+                const list = document.getElementById('admin-platforms-list');
+                // The single select 'project-platform-select' is gone, we now use 'project-code-platform-select' and 'project-deploy-platform-select'
+                list.innerHTML = '';
+                window.platformsMap = {};
                 snap.forEach(doc => {
                     const d = doc.data(); window.platformsMap[doc.id] = d;
                     list.innerHTML += `
