@@ -288,12 +288,20 @@
                 snap.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
                 projects.sort((a, b) => (a.order || 999) - (b.order || 999));
 
+                // Calculate Category Indices
+                const catCounts = {};
+                projects.forEach(p => {
+                    if (!catCounts[p.categoryId]) catCounts[p.categoryId] = 0;
+                    catCounts[p.categoryId]++;
+                    p._catIndex = catCounts[p.categoryId];
+                });
+
                 projects.forEach((d, i) => {
                     window.projectsMap[d.id] = d;
                     const cat = window.categoriesMap[d.categoryId]?.name || '-';
                     list.innerHTML += `
                         <div class="admin-item" draggable="true" data-id="${d.id}" id="proj-row-${d.id}">
-                            <div class="admin-item-info"><h3>☰ No.${i + 1} ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat}</p></div>
+                            <div class="admin-item-info"><h3>☰ No.${i + 1} (No.${d._catIndex}) ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat}</p></div>
                             <div class="admin-item-actions"><button class="btn-edit" onclick="editProject('${d.id}')" style="background:#f59e0b;">編集</button><button class="btn-delete" onclick="del('projects','${d.id}')">削除</button></div>
                         </div>`;
                 });
