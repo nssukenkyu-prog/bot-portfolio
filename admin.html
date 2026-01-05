@@ -89,10 +89,7 @@
                             </div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group">
-                                <label>通し番号 (No.)</label>
-                                <input type="text" name="displayId" id="input-displayId" placeholder="例: 001" />
-                            </div>
+
                             <div class="form-group">
                                 <label>リリース日</label>
                                 <input type="date" name="releaseDate" id="input-releaseDate" />
@@ -340,7 +337,7 @@
             document.getElementById('project-code-platform-select').value = d.codePlatformId || '';
             document.getElementById('project-deploy-platform-select').value = d.deployPlatformId || d.platformId;
 
-            document.getElementById('input-displayId').value = d.displayId || '';
+
             document.getElementById('input-releaseDate').value = d.releaseDate || '';
             document.getElementById('input-description').value = d.description || '';
             document.getElementById('input-url').value = d.url || '';

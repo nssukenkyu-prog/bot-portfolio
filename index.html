@@ -71,6 +71,16 @@
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
 
+                // sort and assign indices
+                projectsData.sort((a, b) => (a.order || 999) - (b.order || 999));
+                const catCounts = {};
+                projectsData.forEach((p, i) => {
+                    p._globalIndex = i + 1;
+                    if (!catCounts[p.categoryId]) catCounts[p.categoryId] = 0;
+                    catCounts[p.categoryId]++;
+                    p._catIndex = catCounts[p.categoryId];
+                });
+
                 renderFilters();
                 displayProjects('all');
                 loading.style.display = 'none';
@@ -143,7 +153,7 @@
                         : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
                         </div>
                         <h3>
-                            ${p.displayId ? `<span class="display-id">${p.displayId}</span>` : ''}
+                            <span class="display-id">No.${p._globalIndex} <span style="font-size:0.8em;opacity:0.7;">(#${p._catIndex})</span></span>
                             ${p.title}
                             ${p.releaseDate ? `<span class="release-date">${p.releaseDate}</span>` : ''}
                         </h3>
