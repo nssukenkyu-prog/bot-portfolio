@@ -490,7 +490,7 @@
 
                 if (data.order) data.order = parseInt(data.order);
 
-                if (col === 'projects' && !data.createdAt) data.createdAt = new Date().toISOString();
+                if (col === 'projects' && !docId && !data.createdAt) data.createdAt = new Date().toISOString();
                 if (col === 'projects' && !data.order && !docId) data.order = 999; // 新規のみ999
 
                 if (docId) {
