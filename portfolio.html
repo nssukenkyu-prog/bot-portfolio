@@ -184,14 +184,9 @@
 
                 return `
                 <div class="project-card">
-                    <div class="project-thumbnail">
                         ${p.thumbnail
                         ? `<img src="${p.thumbnail}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>📄</div>'">`
                         : `<div class="thumbnail-placeholder">📄</div>`}
-                        <div class="thumbnail-overlay">
-                            ${codePlat ? `<span class="platform-badge" style="background:${codePlat.color}">💻 ${codePlat.name}</span>` : ''}
-                            <span class="platform-badge" style="background:${deployPlat.color}">🚀 ${deployPlat.name}</span>
-                        </div>
                     </div>
                     <div class="project-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap:10px;">
                         <div class="project-title-group" style="flex:1;">
@@ -203,6 +198,8 @@
                                 ${p.creators
                         ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
                         : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
+                                <span class="platform-badge-small" style="background:${deployPlat.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">🚀 ${deployPlat.name}</span>
+                                ${codePlat ? `<span class="platform-badge-small" style="background:${codePlat.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">💻 ${codePlat.name}</span>` : ''}
                             </div>
                         </div>
                         ${p.releaseDate ? `<div class="release-date" style="font-size:0.85rem; color:#64748b; white-space:nowrap; margin-top:5px;">${p.releaseDate}</div>` : ''}
