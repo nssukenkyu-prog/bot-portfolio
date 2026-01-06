@@ -194,8 +194,8 @@
                                 ${p.creators
                         ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
                         : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
-                                <span class="platform-badge-small" style="background:${deployPlat.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">🚀 ${deployPlat.name}</span>
-                                ${codePlat ? `<span class="platform-badge-small" style="background:${codePlat.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">💻 ${codePlat.name}</span>` : ''}
+                                <span class="platform-badge-small" style="background:${deployPlat.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">🖥️ ${deployPlat.name}</span>
+                                ${codePlat ? `<span class="platform-badge-small" style="background:${codePlat.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">🔐 ${codePlat.name}</span>` : ''}
                             </div>
                         </div>
                         ${p.releaseDate ? `<div class="release-date" style="font-size:0.85rem; color:#64748b; white-space:nowrap; margin-top:5px;">${p.releaseDate}</div>` : ''}
