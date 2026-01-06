@@ -108,23 +108,22 @@
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
 
-                // 1. Assign Creation-Based IDs (Oldest = 1)
-                const sortedByDate = [...projectsData].sort((a, b) => {
+                // 1. Assign Global IDs (Newest = 1) based on Creation Date DESC
+                const sortedByDateDesc = [...projectsData].sort((a, b) => {
                     const dateA = new Date(a.createdAt).getTime();
                     const dateB = new Date(b.createdAt).getTime();
-                    return dateA - dateB;
+                    return dateB - dateA; // Newest First
                 });
                 const idMap = {};
-                sortedByDate.forEach((p, i) => {
-                    idMap[p.id] = i + 1; // No.1 is oldest
+                sortedByDateDesc.forEach((p, i) => {
+                    idMap[p.id] = i + 1; // No.1 is Newest
                 });
 
-                // 2. Apply IDs to original data
-                projectsData.forEach(p => {
-                    p._globalIndex = idMap[p.id];
-                });
-                // 表示順(order)で並び替え
-                projectsData.sort((a, b) => (a.order || 999) - (b.order || 999));
+                // Apply IDs
+                projectsData.forEach(p => p._globalIndex = idMap[p.id]);
+
+                // 表示順(order)で並び替え (Initial sort, but displayProjects overrides)
+                // projectsData.sort((a, b) => (a.order || 999) - (b.order || 999));
 
                 // 描画実行
                 renderFilters();
@@ -158,7 +157,7 @@
             // フィルタリングと並び替え
             let targets = [];
             if (catId === 'all') {
-                targets = [...projectsData].sort((a, b) => a._globalIndex - b._globalIndex); // 作成順(古い順)
+                targets = [...projectsData].sort((a, b) => a._globalIndex - b._globalIndex); // No.1 (Newest) -> No.N (Oldest)
             } else {
                 targets = projectsData.filter(p => p.categoryId === catId);
                 targets.sort((a, b) => (a.order || 999) - (b.order || 999)); // 管理者指定順
@@ -181,8 +180,7 @@
 
                 // Creation-numbering (Always Global)
                 const displayNum = p._globalIndex;
-                // Show number ONLY in 'all' view
-                const showNum = (catId === 'all');
+                const showNum = true; // Always show number
 
                 return `
                 <div class="project-card">
