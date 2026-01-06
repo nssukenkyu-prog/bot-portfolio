@@ -71,16 +71,16 @@
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
 
-                // 1. Assign Global IDs (Newest = 1) based on Creation Date DESC
-                // "Sort 'All' by Create/Update order... assign numbers from top"
-                const sortedByDateDesc = [...projectsData].sort((a, b) => {
+                // 1. Assign Global IDs (Oldest = 1) based on Creation Date ASC
+                // "Creation order (oldest order)... newest has largest number"
+                const sortedByDateAsc = [...projectsData].sort((a, b) => {
                     const dateA = new Date(a.createdAt).getTime();
                     const dateB = new Date(b.createdAt).getTime();
-                    return dateB - dateA; // Newest First
+                    return dateA - dateB; // Oldest First
                 });
                 const idMap = {};
-                sortedByDateDesc.forEach((p, i) => {
-                    idMap[p.id] = i + 1; // No.1 is Newest
+                sortedByDateAsc.forEach((p, i) => {
+                    idMap[p.id] = i + 1; // No.1 is Oldest
                 });
 
                 // Apply IDs
@@ -126,12 +126,13 @@
             // フィルタリングと並び替え
             let targets = [];
             if (filterCatId === 'all') {
-                // "Create/Update order" -> typically Newest First for All
-                targets = [...projectsData].sort((a, b) => a._globalIndex - b._globalIndex);
+                // "Sort by Newest First" -> Largest ID First
+                targets = [...projectsData].sort((a, b) => b._globalIndex - a._globalIndex);
             } else {
                 targets = projectsData.filter(p => p.categoryId === filterCatId);
-                // Category view: Admin Order (or keep Global Order if preferred, but user prev requested Manual)
-                targets.sort((a, b) => (a.order || 999) - (b.order || 999));
+                // "Reflect strict number... Unique Number"
+                // "Category view is 'All' number reflected" -> Done by p._globalIndex
+                targets.sort((a, b) => (a.order || 999) - (b.order || 999)); // 管理者指定順
             }
 
             if (targets.length === 0) {

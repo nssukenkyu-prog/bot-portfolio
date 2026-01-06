@@ -294,15 +294,15 @@
                     snap.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
                     projects.sort((a, b) => (a.order || 999) - (b.order || 999));
 
-                    // 1. Assign Global IDs (Newest = 1) based on Creation Date DESC
-                    const sortedByDateDesc = [...projects].sort((a, b) => {
+                    // 1. Assign Global IDs (Oldest = 1) based on Creation Date ASC
+                    const sortedByDateAsc = [...projects].sort((a, b) => {
                         const dateA = new Date(a.createdAt).getTime();
                         const dateB = new Date(b.createdAt).getTime();
-                        return dateB - dateA; // Newest First
+                        return dateA - dateB; // Oldest First
                     });
                     const idMap = {};
-                    sortedByDateDesc.forEach((p, i) => {
-                        idMap[p.id] = i + 1; // No.1 is Newest
+                    sortedByDateAsc.forEach((p, i) => {
+                        idMap[p.id] = i + 1; // No.1 is Oldest
                     });
                     projects.forEach(p => p._globalIndex = idMap[p.id]);
 
