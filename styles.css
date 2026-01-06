@@ -810,4 +810,42 @@ body {
     .filter-section {
         top: 130px;
     }
+}/* ===== サムネイル ===== */
+.project-thumbnail {
+    width: 100%;
+    height: 200px;
+    /* 固定高さで潰れ防止 */
+    background-color: #f1f5f9;
+    /* プレースホルダー背景色 */
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+}
+
+.project-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.project-card:hover .project-thumbnail img {
+    transform: scale(1.05);
+}
+
+.thumbnail-overlay {
+    /* Previously present, now removed/unused but keeping safe */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
 }

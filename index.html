@@ -158,9 +158,7 @@
                 return `
                 <div class="project-card">
                     <div class="project-thumbnail">
-                        ${thumbUrl
-                        ? `<img src="${thumbUrl}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>📄</div>'">`
-                        : `<div class="thumbnail-placeholder">📄</div>`}
+                        ${thumbUrl ? `<img src="${thumbUrl}" alt="${p.title}" onerror="this.style.display='none'">` : ''}
                     </div>
                     <div class="project-content">
                         <div class="project-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap:10px;">
