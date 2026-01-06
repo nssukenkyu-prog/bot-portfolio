@@ -126,8 +126,8 @@
             // フィルタリングと並び替え
             let targets = [];
             if (filterCatId === 'all') {
-                // "Sort by Newest First" -> Largest ID First
-                targets = [...projectsData].sort((a, b) => b._globalIndex - a._globalIndex);
+                // "Sort by Oldest First" -> Smallest ID First (1, 2, 3...)
+                targets = [...projectsData].sort((a, b) => a._globalIndex - b._globalIndex);
             } else {
                 targets = projectsData.filter(p => p.categoryId === filterCatId);
                 // "Reflect strict number... Unique Number"
@@ -152,10 +152,6 @@
 
                 // Always use global index
                 const displayNum = p._globalIndex;
-                // Show number ALWAYS (User requested "reflect number in category view")
-                // Wait, user said "Categorized view... reflect that number". 
-                // Previous request was "Hide number in category". 
-                // This request says "Reflect that number". Overrides previous.
                 const showNum = true;
 
 
@@ -166,8 +162,8 @@
                         ? `<img src="${thumbUrl}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>📄</div>'">`
                         : `<div class="thumbnail-placeholder">📄</div>`}
                         <div class="thumbnail-overlay">
-                            ${codePlatform ? `<span class="platform-badge" style="background:${codePlatform.color}">${codePlatform.name}</span>` : ''}
-                            <span class="platform-badge" style="background:${deployPlatform.color}">${deployPlatform.name}</span>
+                            ${codePlatform ? `<span class="platform-badge" style="background:${codePlatform.color}">💻 ${codePlatform.name}</span>` : ''}
+                            <span class="platform-badge" style="background:${deployPlatform.color}">🚀 ${deployPlatform.name}</span>
                         </div>
                     </div>
                     <div class="project-content">

@@ -157,7 +157,7 @@
             // フィルタリングと並び替え
             let targets = [];
             if (catId === 'all') {
-                targets = [...projectsData].sort((a, b) => b._globalIndex - a._globalIndex); // No.N (Newest) -> No.1 (Oldest)
+                targets = [...projectsData].sort((a, b) => a._globalIndex - b._globalIndex); // No.1 (Oldest) First
             } else {
                 targets = projectsData.filter(p => p.categoryId === catId);
                 targets.sort((a, b) => (a.order || 999) - (b.order || 999)); // 管理者指定順
@@ -184,6 +184,15 @@
 
                 return `
                 <div class="project-card">
+                    <div class="project-thumbnail">
+                        ${p.thumbnail
+                        ? `<img src="${p.thumbnail}" alt="${p.title}" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>📄</div>'">`
+                        : `<div class="thumbnail-placeholder">📄</div>`}
+                        <div class="thumbnail-overlay">
+                            ${codePlat ? `<span class="platform-badge" style="background:${codePlat.color}">💻 ${codePlat.name}</span>` : ''}
+                            <span class="platform-badge" style="background:${deployPlat.color}">🚀 ${deployPlat.name}</span>
+                        </div>
+                    </div>
                     <div class="project-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap:10px;">
                         <div class="project-title-group" style="flex:1;">
                             <h3 style="margin:0;">
@@ -194,8 +203,6 @@
                                 ${p.creators
                         ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
                         : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
-                                ${codePlat ? `<span class="platform-badge-small" style="background:${codePlat.color}">${codePlat.name}</span>` : ''}
-                                <span class="platform-badge-small" style="background:${deployPlat.color}">${deployPlat.name}</span>
                             </div>
                         </div>
                         ${p.releaseDate ? `<div class="release-date" style="font-size:0.85rem; color:#64748b; white-space:nowrap; margin-top:5px;">${p.releaseDate}</div>` : ''}
