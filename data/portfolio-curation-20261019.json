@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-19",
+  "purpose": "Six GitHub-verified portfolio records; public-display overlay pending Firestore reconciliation.",
+  "updates": [
+    {
+      "matchTitles": [
+        "出張報告システム"
+      ],
+      "fields": {
+        "description": "出張申請・報告・旅費精算を一元的に扱う学校業務向けシステム。Web画面とGoogle Apps Scriptを連携させ、承認、経費処理、書類作成、通知、記録管理を支援する。",
+        "tags": "学校業務,出張報告,旅費精算,Google Apps Script,Cloudflare"
+      }
+    },
+    {
+      "matchTitles": [
+        "SCC リピート率管理システム",
+        "SCCリピート率管理システム",
+        "SCC リピート率管理"
+      ],
+      "fields": {
+        "description": "スポーツキュアセンターの継続来院状況を可視化する集計システム。初回来院から30日以内の2回目・3回目来院率と2→3回目継続率を、重複エピソード・評価中症例を区別して算出する。",
+        "tags": "柔道整復,接骨院,継続来院,リピート率,Google Sheets,Cloudflare"
+      }
+    }
+  ],
+  "additions": [
+    {
+      "title": "AI健康運動伴走アプリ",
+      "matchTitles": [
+        "AI健康運動伴走アプリ",
+        "AI健康運動伴走アプリ（Research v1）"
+      ],
+      "description": "高齢者の運動継続と自己決定を支援する研究用Webアプリ。承認済み25種類の運動、ルールに基づく安全確認、研究群に応じた運動提案、実施状況の管理機能を備える。",
+      "category": "研究",
+      "codePlatform": "GitHub",
+      "deployPlatform": "Cloudflare",
+      "url": "https://kamoshidanishi-danchi.nssu-kenkyu.workers.dev",
+      "tags": "研究,高齢者,健康運動,生成AI,運動継続,Cloudflare",
+      "creators": [
+        "Kedo bot"
+      ],
+      "createdAt": "2026-10-19T00:00:01+09:00",
+      "order": 999
+    },
+    {
+      "title": "リアクショントレーニングPro",
+      "matchTitles": [
+        "リアクショントレーニングPro"
+      ],
+      "description": "反応速度・カラー判断（Go/No-Go）・スタートダッシュを測定する地域連携型トレーニングアプリ。反応時間、正答率、フライング判定、ランキングを可視化し、スプリントの認知・判断・行動を学ぶ。",
+      "category": "アスリート",
+      "codePlatform": "GitHub",
+      "deployPlatform": "Cloudflare",
+      "url": "",
+      "tags": "スポーツ,反応時間,Go/No-Go,スタートダッシュ,トレーニング",
+      "creators": [
+        "Kedo bot"
+      ],
+      "createdAt": "2026-10-19T00:00:02+09:00",
+      "order": 999
+    },
+    {
+      "title": "KEDO's Presentation",
+      "matchTitles": [
+        "KEDO's Presentation"
+      ],
+      "description": "大学授業・研修向けの双方向プレゼンテーションシステム。スライドのリアルタイム同期、選択式・自由記述・ワードクラウド、Q&A、PDF取り込み、結果集計・エクスポートに対応する。",
+      "category": "教育系業務",
+      "codePlatform": "GitHub",
+      "deployPlatform": "Cloudflare",
+      "url": "https://kedo-s-presentation-web.nssu-kenkyu.workers.dev/",
+      "tags": "教育,プレゼンテーション,双方向授業,リアルタイム,アンケート,Firebase",
+      "creators": [
+        "Kedo bot"
+      ],
+      "createdAt": "2026-10-19T00:00:03+09:00",
+      "order": 999
+    },
+    {
+      "title": "SCC Instagram Scheduler",
+      "matchTitles": [
+        "SCC Instagram Scheduler"
+      ],
+      "description": "スポーツキュアセンター公式Instagramの予約・自動投稿を支援する運用システム。画像・動画・カルーセル・リール・ストーリーズの承認付き投稿、重複送信防止、インサイト取得などを実装する。",
+      "category": "その他業務",
+      "codePlatform": "GitHub",
+      "deployPlatform": "Cloudflare",
+      "url": "",
+      "tags": "SNS,Instagram,予約投稿,自動化,Cloudflare,運用管理",
+      "creators": [
+        "Kedo bot"
+      ],
+      "createdAt": "2026-10-19T00:00:04+09:00",
+      "order": 999
+    }
+  ]
+}
