@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "preparedAt": "2026-10-19",
-  "purpose": "Six GitHub-verified portfolio records; public-display overlay pending Firestore reconciliation.",
+  "purpose": "Eight reviewed portfolio items: six additions and two read-only display updates pending Firestore reconciliation.",
   "updates": [
     {
       "matchTitles": [
@@ -93,6 +93,54 @@
       ],
       "createdAt": "2026-10-19T00:00:04+09:00",
       "order": 999
+    },
+    {
+      "title": "R9 JSPO-AT 教員配置・時間割シミュレーター",
+      "matchTitles": [
+        "R9 JSPO-AT 教員配置・時間割シミュレーター",
+        "R9_JSPO_AT_教員配置・時間割シミュレーター",
+        "R9_JSPO_AT_教員配置時間割シミュレーター"
+      ],
+      "description": "令和9年度のJSPO-AT附帯コースに向け、科目・講師要件、教員配置、担当時間、現場実習や時間割の検討を支援するシミュレーター。Google Sheetsの管理データとGASによる保存・同期の設計を備える。GAS Webアプリの実稼働状況は確認中。",
+      "category": "教育系業務",
+      "codePlatform": "",
+      "deployPlatform": "GAS",
+      "url": "",
+      "tags": "JSPO-AT,教育,教員配置,時間割,講師要件,Google Sheets,GAS連携",
+      "creators": [
+        "Kedo bot"
+      ],
+      "createdAt": "2026-10-19T00:00:05+09:00",
+      "order": 999
+    },
+    {
+      "title": "キャリア支援ランチセミナー・弁当抽選DB",
+      "matchTitles": [
+        "キャリア支援ランチセミナー・弁当抽選DB",
+        "キャリア支援ランチセミナー_弁当抽選DB_2026",
+        "キャリア支援ランチセミナー・弁当抽選システム",
+        "キャリア支援ランチセミナー／弁当抽選Webアプリ"
+      ],
+      "description": "キャリア支援ランチセミナーの開催日程、参加希望、欠席人数、抽選条件、受取・通知履歴を管理するGoogle Sheetsデータベース。重み付き抽選やGoogle Chat通知などはGAS連携の設計に含まれ、実装・運用状況は確認中。",
+      "category": "教育系業務",
+      "codePlatform": "",
+      "deployPlatform": "GAS",
+      "url": "",
+      "tags": "教育,キャリア支援,ランチセミナー,弁当抽選,Google Sheets,GAS連携,管理DB",
+      "creators": [
+        "Kedo bot"
+      ],
+      "createdAt": "2026-10-19T00:00:06+09:00",
+      "order": 999
     }
-  ]
+  ],
+  "selectionNotes": {
+    "excluded": [
+      "教員用ダッシュボード（共通課題・問題演習）"
+    ],
+    "deferred": [
+      "第4回 睡眠評価Webアプリ"
+    ],
+    "caution": "The two additional GAS-related entries have verified Google Sheets sources. GAS deployment and runtime status remain unverified; no spreadsheet, student directory, or administrator link is exposed."
+  }
 }
