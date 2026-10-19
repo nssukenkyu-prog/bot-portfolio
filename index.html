@@ -30,6 +30,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { applyPortfolioCuration } from "./portfolio-curation.js";
 
         // ■■■ Firebase設定 ■■■
         const firebaseConfig = {
@@ -70,6 +71,19 @@
                 // プロジェクト整理
                 projectsData = [];
                 projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
+
+                // Review-approved GitHub metadata is displayed alongside Firestore entries.
+                // This leaves the Firestore records untouched and avoids duplicates.
+                try {
+                    const curated = await applyPortfolioCuration(projectsData, categoriesData, platformsData);
+                    projectsData = curated.projects;
+                    if (curated.stats.unmatched.length) {
+                        console.warn('Unmatched curated portfolio records:', curated.stats.unmatched);
+                    }
+                } catch (error) {
+                    console.warn('Could not load GitHub portfolio updates; using Firestore only.', error);
+                }
+
 
                 // 1. Assign Global IDs (Oldest = 1) based on Creation Date ASC
                 // "Creation order (oldest order)... newest has largest number"
