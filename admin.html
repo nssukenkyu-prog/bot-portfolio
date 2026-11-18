@@ -4,115 +4,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>総合管理画面</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>総合管理画面 - Projects Portfolio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="admin-page">
     <!-- ログインオーバーレイ -->
-    <div id="login-overlay"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div
-            style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); text-align: center; max-width: 400px; width: 90%;">
-            <h2 style="margin-bottom: 1.5rem; color: #1e293b;">🔐 管理画面ログイン</h2>
-            <input type="password" id="password-input" placeholder="パスワードを入力"
-                style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 1rem; font-size: 1rem;">
-            <p id="login-error" style="color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; display: none;"></p>
-            <button onclick="attemptLogin()"
-                style="width: 100%; background: #3b82f6; color: white; border: none; padding: 0.75rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">ログイン</button>
+    <div id="login-overlay">
+        <div class="auth-card">
+            <div class="auth-icon" aria-hidden="true">🔐</div>
+            <h2>管理画面ログイン</h2>
+            <p style="color:#64748b; font-size:0.9rem;">管理者パスワードを入力してください</p>
+            <form id="admin-login-form">
+                <div class="password-field-wrap">
+                    <input
+                        type="password"
+                        id="password-input"
+                        class="lock-input"
+                        placeholder="Password"
+                        autocomplete="current-password"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                        aria-label="管理者パスワード"
+                        required
+                    >
+                    <button type="button" id="toggle-admin-pass" class="password-toggle-btn" aria-label="パスワードを表示">👁️</button>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%;">ログイン</button>
+            </form>
+            <p id="login-error" class="error-message" style="display: none;" role="alert"></p>
+            <div class="lock-footer">
+                <a href="portfolio.html">← ポートフォリオ一覧へ戻る</a>
+            </div>
         </div>
     </div>
 
-    <!-- 管理画面コンテンツ（初期状態は非表示） -->
+    <!-- 管理画面コンテンツ -->
     <div id="admin-app" style="display: none;">
         <nav class="top-nav">
             <a href="portfolio.html" class="nav-back">← 一覧に戻る</a>
             <h1 class="nav-title">⚙️ 総合管理画面</h1>
-            <button onclick="logout()"
-                style="margin-left: auto; background: transparent; border: 1px solid white; color: white; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">ログアウト</button>
+            <div class="nav-right">
+                <button type="button" id="btn-logout" class="nav-logout">ログアウト</button>
+            </div>
         </nav>
 
-        <div class="container">
-            <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab('projects', this)">📂 プロジェクト</button>
-                <button class="tab-btn" onclick="switchTab('categories', this)">🏷️ カテゴリー</button>
-                <button class="tab-btn" onclick="switchTab('platforms', this)">🔧 プラットフォーム</button>
+        <main class="container">
+            <div class="admin-tabs" role="tablist">
+                <button type="button" class="tab-btn active" data-tab="projects">📂 プロジェクト</button>
+                <button type="button" class="tab-btn" data-tab="categories">🏷️ カテゴリー</button>
+                <button type="button" class="tab-btn" data-tab="platforms">🔧 プラットフォーム</button>
             </div>
 
             <div id="tab-projects" class="tab-content">
-                <div class="admin-panel">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                        <h2>📋 登録済みプロジェクト</h2>
-                        <button onclick="saveOrder()" class="btn-primary"
-                            style="background-color: #f59e0b; font-size:0.9rem;">💾 並び順を保存</button>
+                <!-- データ健全性診断＆バックアップ -->
+                <div id="diagnostics-panel" class="diagnostics-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                        <strong id="diagnostics-summary" style="font-size:0.92rem;">診断中...</strong>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button type="button" id="btn-export-backup" class="btn-secondary" style="padding:0.45rem 0.9rem; font-size:0.84rem;">📥 JSONバックアップ保存</button>
+                            <button type="button" id="btn-repair-issues" class="btn-primary" style="padding:0.45rem 0.95rem; font-size:0.84rem; background:#d97706; display:none;">🔧 検出された問題をすべて自動修復</button>
+                        </div>
                     </div>
+                    <ul id="diagnostics-list" class="diagnostics-list" style="display:none;"></ul>
+                </div>
+
+                <div class="admin-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+                        <h2 style="margin:0;">📋 登録済みプロジェクト</h2>
+                        <button type="button" id="btn-save-order" class="btn-primary" style="background-color:#f59e0b; padding:0.55rem 1.1rem; font-size:0.88rem;">💾 並び順を保存</button>
+                    </div>
+
+                    <div class="admin-toolbar">
+                        <input
+                            type="search"
+                            id="admin-search-input"
+                            class="search-input"
+                            style="flex:1 1 220px; padding-left:0.9rem;"
+                            placeholder="🔍 管理一覧を検索（番号・タイトル・説明）..."
+                            aria-label="管理一覧を検索"
+                        >
+                        <select id="admin-cat-filter" class="toolbar-select" style="flex:0 1 220px;" aria-label="カテゴリー絞り込み">
+                            <option value="all">すべてのカテゴリー</option>
+                        </select>
+                    </div>
+
                     <div id="admin-projects-list" class="admin-list"></div>
                 </div>
 
-                <div class="admin-panel" style="margin-top: 2rem;" id="default-project-form-container">
-                    <h2>✨ 追加・編集</h2>
+                <div class="admin-panel" id="default-project-form-container">
+                    <h2>✨ プロジェクト追加・編集</h2>
                     <form id="add-project-form" class="project-form">
                         <input type="hidden" name="docId" id="edit-doc-id">
                         <div class="form-row">
                             <div class="form-group">
-                                <label>タイトル</label>
+                                <label for="input-title">タイトル *</label>
                                 <input type="text" name="title" id="input-title" required />
                             </div>
                             <div class="form-group">
                                 <label>作成者 (複数選択可)</label>
-                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; padding: 0.5rem 0;">
-                                    <label
-                                        style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; cursor: pointer;">
-                                        <input type="checkbox" name="creators" value="Yuzu bot"
-                                            class="creator-checkbox"> Yuzu bot
+                                <div style="display:flex; gap:1rem; flex-wrap:wrap; padding:0.45rem 0;">
+                                    <label style="display:flex; align-items:center; gap:0.45rem; font-weight:normal; cursor:pointer;">
+                                        <input type="checkbox" name="creators" value="Yuzu bot" class="creator-checkbox"> Yuzu bot
                                     </label>
-                                    <label
-                                        style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; cursor: pointer;">
-                                        <input type="checkbox" name="creators" value="Kedo bot"
-                                            class="creator-checkbox"> Kedo bot
+                                    <label style="display:flex; align-items:center; gap:0.45rem; font-weight:normal; cursor:pointer;">
+                                        <input type="checkbox" name="creators" value="Kedo bot" class="creator-checkbox"> Kedo bot
                                     </label>
                                 </div>
                             </div>
                         </div>
+
                         <div class="form-row">
                             <div class="form-group">
-                                <label>カテゴリー</label>
+                                <label for="project-category-select">カテゴリー *</label>
                                 <select name="categoryId" id="project-category-select" required></select>
                             </div>
                             <div class="form-group">
-                                <label>コード保管場所</label>
+                                <label for="project-code-platform-select">コード保管場所</label>
                                 <select name="codePlatformId" id="project-code-platform-select"></select>
                             </div>
                             <div class="form-group">
-                                <label>デプロイ先</label>
+                                <label for="project-deploy-platform-select">デプロイ先 *</label>
                                 <select name="deployPlatformId" id="project-deploy-platform-select" required></select>
                             </div>
                         </div>
-                        <div class="form-row">
 
+                        <div class="form-row">
                             <div class="form-group">
-                                <label>リリース日</label>
+                                <label for="input-releaseDate">リリース日</label>
                                 <input type="date" name="releaseDate" id="input-releaseDate" />
                             </div>
+                            <div class="form-group">
+                                <label for="input-tags">タグ（カンマ区切り）</label>
+                                <input type="text" name="tags" id="input-tags" placeholder="例: 教育, 臨床実習, Cloudflare" />
+                            </div>
                         </div>
-                        <div class="form-group"><label>説明</label><textarea name="description" id="input-description"
-                                rows="2"></textarea></div>
+
                         <div class="form-group">
-                            <label>リンク設定 (あるものだけ入力)</label>
-                            <div style="margin-bottom:0.5rem;"><input type="url" name="url" id="input-url"
-                                    placeholder="🔗 LP / 公開サイト" /></div>
-                            <div style="margin-bottom:0.5rem;"><input type="url" name="spreadsheetUrl"
-                                    id="input-spreadsheetUrl" placeholder="📊 スプレッドシート" /></div>
-                            <div style="margin-bottom:0.5rem;"><input type="url" name="editUrl" id="input-editUrl"
-                                    placeholder="🔐 GAS / GitHub / 編集画面" /></div>
-                            <div><input type="url" name="formUrl" id="input-formUrl"
-                                    placeholder="📝 Google Form / フォーム" /></div>
+                            <label for="input-description">説明文</label>
+                            <textarea name="description" id="input-description" rows="4" placeholder="プロジェクトの概要や特徴を入力（※パスワード等の機密情報は記載しないでください）"></textarea>
                         </div>
-                        <div class="form-group"><label>タグ</label><input type="text" name="tags" id="input-tags" /></div>
-                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                            <button type="submit" class="btn-primary" id="submit-btn">追加</button>
-                            <button type="button" id="cancel-edit-btn" class="btn-secondary" style="display:none;"
-                                onclick="resetForm('project')">キャンセル</button>
+
+                        <div class="form-group">
+                            <label>リンク設定（あるものだけ入力・保存時に /u/0/ 等は自動整形されます）</label>
+                            <div style="display:flex; flex-direction:column; gap:0.55rem;">
+                                <input type="url" name="url" id="input-url" placeholder="🔗 LP / 公開サイト URL" />
+                                <input type="url" name="formUrl" id="input-formUrl" placeholder="📝 Google Form / フォーム URL" />
+                                <input type="url" name="spreadsheetUrl" id="input-spreadsheetUrl" placeholder="📊 スプレッドシート / データ URL" />
+                                <input type="url" name="editUrl" id="input-editUrl" placeholder="⚙️ GAS / GitHub / 編集画面 URL" />
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:0.75rem; margin-top:0.5rem; flex-wrap:wrap;">
+                            <button type="submit" class="btn-primary" id="submit-btn">追加する</button>
+                            <button type="button" id="cancel-edit-btn" class="btn-secondary" style="display:none;">キャンセル</button>
                         </div>
                     </form>
                 </div>
@@ -124,17 +172,21 @@
                     <form id="add-category-form" class="project-form">
                         <input type="hidden" name="docId" id="edit-cat-id">
                         <div class="form-row">
-                            <div class="form-group"><label>名前</label><input type="text" name="name" required /></div>
-                            <div class="form-group"><label>順序</label><input type="number" name="order" required
-                                    value="1" /></div>
+                            <div class="form-group">
+                                <label>カテゴリー名 *</label>
+                                <input type="text" name="name" required />
+                            </div>
+                            <div class="form-group">
+                                <label>表示順序 *</label>
+                                <input type="number" name="order" required value="1" />
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                            <button type="submit" class="btn-primary" id="cat-submit-btn">追加</button>
-                            <button type="button" id="cat-cancel-btn" class="btn-secondary" style="display:none;"
-                                onclick="resetForm('category')">キャンセル</button>
+                        <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+                            <button type="submit" class="btn-primary" id="cat-submit-btn">追加する</button>
+                            <button type="button" id="cat-cancel-btn" class="btn-secondary" style="display:none;">キャンセル</button>
                         </div>
                     </form>
-                    <div id="admin-categories-list" class="admin-list" style="margin-top: 2rem;"></div>
+                    <div id="admin-categories-list" class="admin-list" style="margin-top:1.75rem;"></div>
                 </div>
             </div>
 
@@ -144,369 +196,27 @@
                     <form id="add-platform-form" class="project-form">
                         <input type="hidden" name="docId" id="edit-plat-id">
                         <div class="form-row">
-                            <div class="form-group"><label>名前</label><input type="text" name="name" required /></div>
-                            <div class="form-group"><label>色</label><input type="color" name="color" value="#34A853"
-                                    class="color-input" /></div>
+                            <div class="form-group">
+                                <label>プラットフォーム名 *</label>
+                                <input type="text" name="name" required />
+                            </div>
+                            <div class="form-group">
+                                <label>バッジカラー</label>
+                                <input type="color" name="color" value="#34A853" class="color-input" />
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                            <button type="submit" class="btn-primary" id="plat-submit-btn">追加</button>
-                            <button type="button" id="plat-cancel-btn" class="btn-secondary" style="display:none;"
-                                onclick="resetForm('platform')">キャンセル</button>
+                        <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+                            <button type="submit" class="btn-primary" id="plat-submit-btn">追加する</button>
+                            <button type="button" id="plat-cancel-btn" class="btn-secondary" style="display:none;">キャンセル</button>
                         </div>
                     </form>
-                    <div id="admin-platforms-list" class="admin-list" style="margin-top: 2rem;"></div>
+                    <div id="admin-platforms-list" class="admin-list" style="margin-top:1.75rem;"></div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, query, orderBy, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // ■■■ 認証ロジック ■■■
-        const PASSWORD = 'scc62625353'; // 簡易パスワード
-        const AUTH_KEY = 'portfolio_admin_auth';
-
-        window.attemptLogin = () => {
-            const input = document.getElementById('password-input');
-            const error = document.getElementById('login-error');
-
-            if (input.value === PASSWORD) {
-                sessionStorage.setItem(AUTH_KEY, 'true');
-                showAdmin();
-            } else {
-                error.textContent = 'パスワードが違います';
-                error.style.display = 'block';
-            }
-        };
-
-        window.logout = () => {
-            sessionStorage.removeItem(AUTH_KEY);
-            location.reload();
-        };
-
-        function showAdmin() {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('admin-app').style.display = 'block';
-            // データ読み込み開始
-            subscribeData();
-        }
-
-        // Enterキーでログイン
-        document.getElementById('password-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') window.attemptLogin();
-        });
-
-        // 初期チェック
-        if (sessionStorage.getItem(AUTH_KEY) === 'true') {
-            showAdmin();
-        }
-
-        // ■■■ Firebase設定 (貼り付けてください) ■■■
-        const firebaseConfig = {
-            apiKey: "AIzaSyDQuSOlOynAMMtBhBNBoGNHToN6QL-qkX4",
-            authDomain: "portfolio-db-5df49.firebaseapp.com",
-            projectId: "portfolio-db-5df49",
-            storageBucket: "portfolio-db-5df49.firebasestorage.app",
-            messagingSenderId: "587043981242",
-            appId: "1:587043981242:web:e74d3edb165569f0913f83",
-            measurementId: "G-RDGM3YC3G4"
-        };
-        // ■■■■■■■■■■■■■■■■■■■■■■
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.projectsMap = {};
-        window.categoriesMap = {};
-        window.platformsMap = {};
-
-        // データ読み込み (認証後に呼び出されるため、ここでは即時実行しない)
-        // subscribeData(); 
-
-        window.isSubscribed = false;
-
-        function subscribeData() {
-            if (window.isSubscribed) return;
-            window.isSubscribed = true;
-
-            // カテゴリー
-            onSnapshot(query(collection(db, "categories"), orderBy("order")), (snap) => {
-                const list = document.getElementById('admin-categories-list');
-                const sel = document.getElementById('project-category-select');
-                list.innerHTML = ''; sel.innerHTML = '<option value="">選択</option>';
-                window.categoriesMap = {};
-                snap.forEach(doc => {
-                    const d = doc.data(); window.categoriesMap[doc.id] = d;
-                    list.innerHTML += `
-                        <div class="admin-item">
-                            <span>${d.order}. <strong>${d.name}</strong></span>
-                            <div class="admin-item-actions">
-                                <button class="btn-edit" onclick="editCategory('${doc.id}')" style="background:#f59e0b;">編集</button>
-                                <button class="btn-delete" onclick="del('categories','${doc.id}')">削除</button>
-                            </div>
-                        </div>`;
-                    sel.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
-                });
-            });
-            // プラットフォーム
-            onSnapshot(query(collection(db, "platforms"), orderBy("name")), (snap) => {
-                const list = document.getElementById('admin-platforms-list');
-                const codeSel = document.getElementById('project-code-platform-select');
-                const deploySel = document.getElementById('project-deploy-platform-select');
-
-                list.innerHTML = '';
-                codeSel.innerHTML = '<option value="">選択</option>';
-                deploySel.innerHTML = '<option value="">選択</option>';
-
-                window.platformsMap = {};
-                snap.forEach(doc => {
-                    const d = doc.data(); window.platformsMap[doc.id] = d;
-                    list.innerHTML += `
-                        <div class="admin-item">
-                            <span><span style="background:${d.color};width:15px;height:15px;display:inline-block;margin-right:5px;"></span>${d.name}</span>
-                            <div class="admin-item-actions">
-                                <button class="btn-edit" onclick="editPlatform('${doc.id}')" style="background:#f59e0b;">編集</button>
-                                <button class="btn-delete" onclick="del('platforms','${doc.id}')">削除</button>
-                            </div>
-                        </div>`;
-                    codeSel.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
-                    deploySel.innerHTML += `<option value="${doc.id}">${d.name}</option>`;
-                });
-            });
-            // プロジェクト
-            onSnapshot(query(collection(db, "projects"), orderBy("createdAt", "desc")), (snap) => {
-                try {
-                    const list = document.getElementById('admin-projects-list');
-
-                    // FIX: Unconditionally move form to safety before clearing list
-                    const form = document.getElementById('add-project-form');
-                    const defaultContainer = document.getElementById('default-project-form-container');
-                    if (form && defaultContainer) {
-                        defaultContainer.appendChild(form);
-                        // Remove wrapper if exists
-                        const wrapper = document.getElementById('inline-edit-wrapper');
-                        if (wrapper) wrapper.remove();
-                    }
-
-                    list.innerHTML = '';
-                    let projects = [];
-                    snap.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
-                    projects.sort((a, b) => (a.order || 999) - (b.order || 999));
-
-                    // 1. Assign Global IDs (Oldest = 1) based on Creation Date ASC
-                    const sortedByDateAsc = [...projects].sort((a, b) => {
-                        const dateA = new Date(a.createdAt).getTime();
-                        const dateB = new Date(b.createdAt).getTime();
-                        return dateA - dateB; // Oldest First
-                    });
-                    const idMap = {};
-                    sortedByDateAsc.forEach((p, i) => {
-                        idMap[p.id] = i + 1; // No.1 is Oldest
-                    });
-                    projects.forEach(p => p._globalIndex = idMap[p.id]);
-
-                    // 2. Sort for Display (Admin Order)
-                    projects.sort((a, b) => (a.order || 999) - (b.order || 999));
-
-                    projects.forEach((d, i) => {
-                        window.projectsMap[d.id] = d;
-                        const cat = window.categoriesMap[d.categoryId]?.name || '-';
-                        list.innerHTML += `
-                            <div class="admin-item" draggable="true" data-id="${d.id}" id="proj-row-${d.id}">
-                                <div class="admin-item-info"><h3>☰ ${d._globalIndex}. ${d.title}</h3><p class="form-hint">👤${d.creators ? d.creators.join('・') : (d.creator || '-')} | 🏷️${cat}</p></div>
-                                <div class="admin-item-actions"><button class="btn-edit" onclick="editProject('${d.id}')" style="background:#f59e0b;">編集</button><button class="btn-delete" onclick="del('projects','${d.id}')">削除</button></div>
-                            </div>`;
-                    });
-                    setupDragAndDrop();
-                } catch (e) {
-                    console.error("Project render error:", e);
-                    alert("プロジェクト一覧の表示中にエラーが発生しました: " + e.message);
-                }
-            });
-        }
-
-        function setupDragAndDrop() {
-            const list = document.getElementById('admin-projects-list');
-            list.querySelectorAll('.admin-item').forEach(item => {
-                item.addEventListener('dragstart', () => setTimeout(() => item.classList.add('dragging'), 0));
-                item.addEventListener('dragend', () => item.classList.remove('dragging'));
-            });
-            list.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                const after = [...list.querySelectorAll('.admin-item:not(.dragging)')].reduce((closest, child) => {
-                    const box = child.getBoundingClientRect();
-                    const offset = e.clientY - box.top - box.height / 2;
-                    return offset < 0 && offset > closest.offset ? { offset: offset, element: child } : closest;
-                }, { offset: Number.NEGATIVE_INFINITY }).element;
-                after ? list.insertBefore(document.querySelector('.dragging'), after) : list.appendChild(document.querySelector('.dragging'));
-            });
-        }
-
-        window.switchTab = (id, btn) => {
-            document.querySelectorAll('.tab-content').forEach(e => e.style.display = 'none');
-            document.getElementById(`tab-${id}`).style.display = 'block';
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-        };
-        window.saveOrder = async () => {
-            const batch = writeBatch(db);
-            document.querySelectorAll('#admin-projects-list .admin-item').forEach((item, i) => {
-                batch.update(doc(db, "projects", item.dataset.id), { order: i + 1 });
-            });
-            await batch.commit(); alert('保存しました');
-        };
-
-        // --- 編集関数群 ---
-        // プロジェクト編集
-        window.editProject = (id) => {
-            const d = window.projectsMap[id];
-            document.getElementById('edit-doc-id').value = id;
-            document.getElementById('input-title').value = d.title;
-            // Checkbox handling
-            const creators = d.creators || (d.creator ? [d.creator] : []);
-            document.querySelectorAll('.creator-checkbox').forEach(cb => {
-                cb.checked = creators.includes(cb.value);
-            });
-            document.getElementById('project-category-select').value = d.categoryId;
-            // Backwards compatibility: platformId maps to deployPlatformId if not set
-            document.getElementById('project-code-platform-select').value = d.codePlatformId || '';
-            document.getElementById('project-deploy-platform-select').value = d.deployPlatformId || d.platformId;
-
-
-            document.getElementById('input-releaseDate').value = d.releaseDate || '';
-            document.getElementById('input-description').value = d.description || '';
-            document.getElementById('input-url').value = d.url || '';
-            document.getElementById('input-spreadsheetUrl').value = d.spreadsheetUrl || '';
-            document.getElementById('input-editUrl').value = d.editUrl || '';
-            document.getElementById('input-formUrl').value = d.formUrl || '';
-            document.getElementById('input-tags').value = d.tags || '';
-
-            // UI更新
-            document.getElementById('submit-btn').textContent = '更新';
-            document.getElementById('cancel-edit-btn').style.display = 'inline-block';
-
-            // Inline Edit Logic: Move form to after the row
-            const row = document.getElementById(`proj-row-${id}`);
-            const form = document.getElementById('add-project-form');
-            if (row && form) {
-                // Create or get wrapper
-                let wrapper = document.getElementById('inline-edit-wrapper');
-                if (!wrapper) {
-                    wrapper = document.createElement('div');
-                    wrapper.id = 'inline-edit-wrapper';
-                    wrapper.style.padding = '1.5rem';
-                    wrapper.style.background = '#fef3c7'; // Light yellow background
-                    wrapper.style.border = '2px dashed #f59e0b';
-                    wrapper.style.borderRadius = '12px';
-                    wrapper.style.marginTop = '1rem';
-                    wrapper.style.marginBottom = '1rem';
-                }
-                wrapper.innerHTML = ''; // Clear prev content if any (form is usually moved not cloned, but purely wrapper cleanup)
-                wrapper.appendChild(form);
-                row.after(wrapper);
-                wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else {
-                document.getElementById('add-project-form').scrollIntoView({ behavior: 'smooth' });
-            }
-        };
-
-        // カテゴリー編集
-        window.editCategory = (id) => {
-            const d = window.categoriesMap[id];
-            document.getElementById('edit-cat-id').value = id;
-            document.querySelector('#add-category-form [name="name"]').value = d.name;
-            document.querySelector('#add-category-form [name="order"]').value = d.order;
-
-            document.getElementById('cat-submit-btn').textContent = '更新';
-            document.getElementById('cat-cancel-btn').style.display = 'inline-block';
-            document.getElementById('add-category-form').scrollIntoView({ behavior: 'smooth' });
-        };
-
-        // プラットフォーム編集
-        window.editPlatform = (id) => {
-            const d = window.platformsMap[id];
-            document.getElementById('edit-plat-id').value = id;
-            document.querySelector('#add-platform-form [name="name"]').value = d.name;
-            document.querySelector('#add-platform-form [name="color"]').value = d.color;
-
-            document.getElementById('plat-submit-btn').textContent = '更新';
-            document.getElementById('plat-cancel-btn').style.display = 'inline-block';
-            document.getElementById('add-platform-form').scrollIntoView({ behavior: 'smooth' });
-        };
-
-        // リセット関数
-        window.resetForm = (type) => {
-            if (type === 'project') {
-                document.getElementById('add-project-form').reset();
-                document.querySelectorAll('.creator-checkbox').forEach(cb => cb.checked = false); // Explicit reset
-                document.getElementById('edit-doc-id').value = '';
-                document.getElementById('submit-btn').textContent = '追加';
-                document.getElementById('cancel-edit-btn').style.display = 'none';
-
-                // Return form to default container
-                const form = document.getElementById('add-project-form');
-                const defaultContainer = document.getElementById('default-project-form-container');
-                const wrapper = document.getElementById('inline-edit-wrapper');
-                if (form && defaultContainer) {
-                    defaultContainer.appendChild(form);
-                }
-                if (wrapper) wrapper.remove();
-            } else if (type === 'category') {
-                document.getElementById('add-category-form').reset();
-                document.getElementById('edit-cat-id').value = '';
-                document.getElementById('cat-submit-btn').textContent = '追加';
-                document.getElementById('cat-cancel-btn').style.display = 'none';
-            } else if (type === 'platform') {
-                document.getElementById('add-platform-form').reset();
-                document.getElementById('edit-plat-id').value = '';
-                document.getElementById('plat-submit-btn').textContent = '追加';
-                document.getElementById('plat-cancel-btn').style.display = 'none';
-            }
-        };
-
-        window.del = async (col, id) => { if (confirm('削除しますか？')) await deleteDoc(doc(db, col, id)); };
-
-        // 共通フォーム送信処理
-        const handlers = { 'add-category-form': 'categories', 'add-platform-form': 'platforms', 'add-project-form': 'projects' };
-        Object.keys(handlers).forEach(id => {
-            document.getElementById(id).addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const data = Object.fromEntries(formData.entries());
-
-                // Handle checkboxes for creators manually if it's the project form
-                if (id === 'add-project-form') {
-                    const selectedCreators = [];
-                    document.querySelectorAll('.creator-checkbox:checked').forEach(cb => selectedCreators.push(cb.value));
-                    data.creators = selectedCreators;
-                    delete data.creator; // Remove legacy if present
-                }
-                const col = handlers[id];
-
-                // docIdを取り出し、データからは削除
-                const docId = data.docId;
-                delete data.docId;
-
-                if (data.order) data.order = parseInt(data.order);
-
-                if (col === 'projects' && !docId && !data.createdAt) data.createdAt = new Date().toISOString();
-                if (col === 'projects' && !data.order && !docId) data.order = 999; // 新規のみ999
-
-                if (docId) {
-                    // 更新
-                    await updateDoc(doc(db, col, docId), data);
-                    alert('✅ 更新しました');
-                    window.resetForm(col === 'projects' ? 'project' : col === 'categories' ? 'category' : 'platform');
-                } else {
-                    // 新規
-                    await addDoc(collection(db, col), data);
-                    alert('✨ 追加しました');
-                    e.target.reset();
-                }
-            });
-        });
-    </script>
+    <script type="module" src="admin-app.js"></script>
 </body>
 
 </html>

@@ -4,232 +4,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Portfolio</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Yuzu bot &amp; Kedo bot の開発プロジェクト・Webアプリ・自動化システム一覧ポートフォリオ">
+    <meta property="og:title" content="Projects Portfolio">
+    <meta property="og:description" content="Yuzu bot &amp; Kedo bot 開発プロジェクトポートフォリオ">
+    <meta property="og:type" content="website">
+    <title>Projects Portfolio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="portfolio-page">
-    <nav class="top-nav">
-        <h1 class="nav-title">🚀 Projects Portfolio</h1>
-        <div class="nav-right">
-            <a href="admin.html" class="nav-admin">🔐 管理画面</a>
-        </div>
-    </nav>
 
-    <div class="container">
-        <div class="filter-section" id="filter-section">
+    <div id="lock-screen">
+        <div class="lock-card">
+            <div class="lock-icon" aria-hidden="true">🔒</div>
+            <h2>Secret Portfolio</h2>
+            <p style="color:#64748b; font-size:0.92rem;">閲覧パスワードを入力してください</p>
+            <form id="lock-form">
+                <div class="password-field-wrap">
+                    <input
+                        type="password"
+                        id="lock-password"
+                        class="lock-input"
+                        placeholder="Password"
+                        autocomplete="current-password"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                        aria-label="閲覧パスワード"
+                        required
+                    >
+                    <button type="button" id="toggle-lock-pass" class="password-toggle-btn" aria-label="パスワードを表示">👁️</button>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%;">解除する</button>
+            </form>
+            <p id="lock-error" class="lock-error" role="alert"></p>
+            <div class="lock-footer">
+                <a href="admin.html">🔐 管理画面へ移動</a>
+            </div>
         </div>
-
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>データを取得中...</p>
-        </div>
-        <div id="projects-grid" class="projects-grid"></div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div id="main-content" style="display: none;">
+        <nav class="top-nav" aria-label="メインナビゲーション">
+            <h1 class="nav-title">🚀 Projects Portfolio</h1>
+            <div class="nav-right">
+                <button type="button" id="btn-relock" class="nav-lock" title="画面をロックする">🔒 ロック</button>
+                <a href="admin.html" class="nav-admin">🔐 管理画面</a>
+            </div>
+        </nav>
 
-        // ■■■ Firebase設定 ■■■
-        const firebaseConfig = {
-            apiKey: "AIzaSyDQuSOlOynAMMtBhBNBoGNHToN6QL-qkX4",
-            authDomain: "portfolio-db-5df49.firebaseapp.com",
-            projectId: "portfolio-db-5df49",
-            storageBucket: "portfolio-db-5df49.firebasestorage.app",
-            messagingSenderId: "587043981242",
-            appId: "1:587043981242:web:e74d3edb165569f0913f83",
-            measurementId: "G-RDGM3YC3G4"
-        };
+        <main class="container">
+            <div id="inapp-banner" class="inapp-banner" style="display: none;" role="status">
+                <div>
+                    <strong>💡 <span id="inapp-name">アプリ内</span>ブラウザで開いています：</strong>
+                    Google製ツール（GASアプリ・フォーム等）が真っ白になる場合は、右上メニューから「Safari / Chrome（標準ブラウザ）で開く」をご利用ください。
+                </div>
+                <div class="inapp-banner-actions">
+                    <button type="button" id="btn-copy-page-url" class="btn-banner">📋 このURLをコピー</button>
+                    <button type="button" id="btn-dismiss-inapp" class="btn-banner" aria-label="案内を閉じる">✕</button>
+                </div>
+            </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+            <div class="filter-section" id="filter-section" role="toolbar" aria-label="カテゴリー絞り込み"></div>
 
-        let projectsData = [];
-        let categoriesData = [];
-        let platformsData = {};
+            <section class="toolbar-panel" aria-label="検索・並び替え・表示設定">
+                <div class="toolbar-top">
+                    <div class="search-box">
+                        <span class="search-icon" aria-hidden="true">🔍</span>
+                        <input
+                            type="search"
+                            id="search-input"
+                            class="search-input"
+                            placeholder="タイトル・キーワード・番号・タグで検索..."
+                            aria-label="プロジェクトを検索"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                        >
+                        <button type="button" id="search-clear" class="search-clear" aria-label="検索語をクリア">✕</button>
+                    </div>
 
-        async function init() {
-            const loading = document.getElementById('loading');
-            try {
-                // 1. カテゴリーとプラットフォームを並列取得
-                const [catSnap, platSnap, projSnap] = await Promise.all([
-                    getDocs(query(collection(db, "categories"), orderBy("order"))),
-                    getDocs(collection(db, "platforms")),
-                    getDocs(query(collection(db, "projects"), orderBy("createdAt", "desc")))
-                ]);
+                    <select id="creator-filter" class="toolbar-select" aria-label="作成者で絞り込み">
+                        <option value="all">👤 すべての作成者</option>
+                        <option value="Yuzu bot">👤 Yuzu bot</option>
+                        <option value="Kedo bot">👤 Kedo bot</option>
+                        <option value="collab">🤝 共同制作</option>
+                    </select>
 
-                // カテゴリー整理
-                categoriesData = [];
-                catSnap.forEach(doc => categoriesData.push({ id: doc.id, ...doc.data() }));
+                    <select id="platform-filter" class="toolbar-select" aria-label="基盤で絞り込み">
+                        <option value="all">🖥️ すべての基盤</option>
+                    </select>
 
-                // プラットフォーム整理 (IDで引けるようにMap化)
-                platformsData = {};
-                platSnap.forEach(doc => platformsData[doc.id] = doc.data());
+                    <select id="sort-select" class="toolbar-select toolbar-sort-full" aria-label="並び順">
+                        <option value="standard">↕️ 標準順</option>
+                        <option value="newest">🕒 新しい順</option>
+                        <option value="oldest">🔢 番号順 (1→)</option>
+                    </select>
+                </div>
 
-                // プロジェクト整理
-                projectsData = [];
-                projSnap.forEach(doc => projectsData.push({ id: doc.id, ...doc.data() }));
+                <div class="toolbar-bottom">
+                    <div class="results-summary">
+                        <span id="results-count" aria-live="polite">読み込み中...</span>
+                        <button type="button" id="btn-reset-filters" class="btn-reset-filters" style="display: none;">条件をリセット</button>
+                    </div>
 
-                // 1. Assign Global IDs (Oldest = 1) based on Creation Date ASC
-                // "Creation order (oldest order)... newest has largest number"
-                const sortedByDateAsc = [...projectsData].sort((a, b) => {
-                    const dateA = new Date(a.createdAt).getTime();
-                    const dateB = new Date(b.createdAt).getTime();
-                    return dateA - dateB; // Oldest First
-                });
-                const idMap = {};
-                sortedByDateAsc.forEach((p, i) => {
-                    idMap[p.id] = i + 1; // No.1 is Oldest
-                });
-
-                // Apply IDs
-                projectsData.forEach(p => p._globalIndex = idMap[p.id]);
-
-                // 2. Render Filters
-                renderFilters();
-
-                // 3. Initial Display
-                displayProjects('all');
-                loading.style.display = 'none';
-
-            } catch (e) {
-                console.error(e);
-                loading.innerHTML = `<p class="error-message">読み込みエラー: ${e.message}</p>`;
-            }
-        }
-
-        // フィルターボタン描画
-        function renderFilters() {
-            const container = document.getElementById('filter-section');
-            let html = `<button class="filter-btn active" onclick="filterProjects('all')">すべて</button>`;
-
-            categoriesData.forEach(cat => {
-                html += `<button class="filter-btn" onclick="filterProjects('${cat.id}')">${cat.name}</button>`;
-            });
-            container.innerHTML = html;
-        }
-
-        // フィルタリング機能 (グローバル)
-        window.filterProjects = (catId) => {
-            // ボタンの見た目更新
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            displayProjects(catId);
-        };
-
-        // プロジェクト表示
-        function displayProjects(filterCatId) {
-            const grid = document.getElementById('projects-grid');
-
-            // フィルタリングと並び替え
-            let targets = [];
-            if (filterCatId === 'all') {
-                // "Sort by Oldest First" -> Smallest ID First (1, 2, 3...)
-                targets = [...projectsData].sort((a, b) => a._globalIndex - b._globalIndex);
-            } else {
-                targets = projectsData.filter(p => p.categoryId === filterCatId);
-                // "Reflect strict number... Unique Number"
-                // "Category view is 'All' number reflected" -> Done by p._globalIndex
-                targets.sort((a, b) => (a.order || 999) - (b.order || 999)); // 管理者指定順
-            }
-
-            if (targets.length === 0) {
-                grid.innerHTML = '<div class="no-projects"><p>プロジェクトがありません</p></div>';
-                return;
-            }
-
-            grid.innerHTML = targets.map(p => {
-                const deployPlatform = platformsData[p.deployPlatformId || p.platformId] || { name: 'Unknown', color: '#ccc' };
-                const codePlatform = platformsData[p.codePlatformId] || null;
-                const thumbUrl = convertGoogleDriveUrl(p.thumbnail);
-                const hasLp = !!p.url;
-                const hasSheet = !!p.spreadsheetUrl;
-                const hasEdit = !!p.editUrl;
-                const hasForm = !!p.formUrl;
-                const hasAnyLink = hasLp || hasSheet || hasEdit || hasForm;
-
-                // Always use global index
-                const displayNum = p._globalIndex;
-                const showNum = true;
-
-
-                return `
-                <div class="project-card">
-                    <div class="project-content">
-                        <div class="project-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap:10px;">
-                            <div class="project-title-group" style="flex:1;">
-                                <h3 style="margin:0;">
-                                    ${showNum ? `<span class="display-id">${displayNum}</span>` : ''}
-                                    ${p.title}
-                                </h3>
-                                <div class="project-meta" style="margin-top:0.2rem;">
-                                    ${p.creators
-                        ? p.creators.map(c => `<span class="creator-badge">👤 ${c}</span>`).join('')
-                        : `<span class="creator-badge">👤 ${p.creator || '-'}</span>`}
-                                    <span class="platform-badge-small" style="background:${deployPlatform.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">🖥️ ${deployPlatform.name}</span>
-                                    ${codePlatform ? `<span class="platform-badge-small" style="background:${codePlatform.color}; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px;">🔐 ${codePlatform.name}</span>` : ''}
-                                </div>
-                            </div>
-                            ${p.releaseDate ? `<div class="release-date" style="font-size:0.85rem; color:#64748b; white-space:nowrap; margin-top:5px;">${p.releaseDate}</div>` : ''}
-                        </div>
-                        <p class="project-description">${p.description || ''}</p>
-                        
-                        ${p.tags ? `<div class="project-tags">${p.tags.split(',').map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
-
-                        <div class="project-links">
-                            ${hasLp ? `
-                                <a href="${p.url}" target="_blank" class="project-link project-link-view">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/><path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/></svg>
-                                    サイトを開く
-                                </a>
-                            ` : ''}
-
-                            ${hasForm ? `
-                                <a href="${p.formUrl}" target="_blank" class="project-link project-link-form" style="background-color: #7248B9; color: white;">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    フォーム
-                                </a>
-                            ` : ''}
-
-                            ${hasSheet ? `
-                                <a href="${p.spreadsheetUrl}" target="_blank" class="project-link project-link-sheet" style="background-color: #1D6F42; color: white;">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-                                    シート
-                                </a>
-                            ` : ''}
-                            
-                            ${hasEdit ? `
-                                <a href="${p.editUrl}" target="_blank" class="project-link project-link-edit">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
-                                    編集画面
-                                </a>
-                            ` : ''}
-
-                            ${!hasAnyLink ? `
-                                <span class="project-link disabled">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
-                                    リンクなし (内部ツール)
-                                </span>
-                            ` : ''}
+                    <div class="view-controls">
+                        <button type="button" id="toggle-manage-links" class="toggle-chip" aria-pressed="false" title="スプレッドシート・編集画面リンクの表示切替">
+                            🔧 管理リンク (Sheet / Edit)
+                        </button>
+                        <div class="layout-switch" role="group" aria-label="表示レイアウト切替">
+                            <button type="button" id="layout-grid" class="layout-btn active">⊞ 2列</button>
+                            <button type="button" id="layout-list" class="layout-btn">☰ 1列</button>
                         </div>
                     </div>
-                </div>`;
-            }).join('');
-        }
+                </div>
+            </section>
 
-        function convertGoogleDriveUrl(url) {
-            if (!url) return '';
-            const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-            if (driveMatch) return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w800`;
-            const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (idMatch) return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w800`;
-            return url;
-        }
+            <div id="loading" class="loading" role="status">
+                <div class="spinner" aria-hidden="true"></div>
+                <p>データを取得中...</p>
+            </div>
 
-        init();
-    </script>
+            <div id="projects-grid" class="projects-grid view-grid"></div>
+        </main>
+    </div>
+
+    <!-- 詳細モーダル -->
+    <div id="detail-modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+        <div class="detail-modal">
+            <div class="detail-modal-header">
+                <h2 id="detail-modal-title" style="font-size:1.15rem; line-height:1.45;"></h2>
+                <button type="button" id="detail-modal-close" class="detail-modal-close" aria-label="閉じる">×</button>
+            </div>
+            <div id="detail-modal-body" class="detail-modal-body"></div>
+        </div>
+    </div>
+
+    <button type="button" id="back-to-top" class="back-to-top" aria-label="ページ上部へ戻る" title="ページ上部へ戻る">↑</button>
+
+    <script type="module" src="portfolio-app.js"></script>
 </body>
 
 </html>
