@@ -532,11 +532,26 @@ body {
 }
 
 .platform-badge-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     padding: 0.18rem 0.55rem;
     border-radius: 6px;
     color: #ffffff;
     font-weight: 600;
     font-size: 0.75rem;
+    text-decoration: none;
+}
+
+.platform-badge-link {
+    cursor: pointer;
+    transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.platform-badge-link:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
 }
 
 .access-badge {

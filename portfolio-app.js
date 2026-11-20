@@ -547,6 +547,20 @@ function renderProjects() {
     grid.innerHTML = targets.map(renderCardHtml).join("");
 }
 
+function renderPlatformBadgeHtml({ icon, name, color, href, roleLabel }) {
+    const label = `${icon} ${escapeHtml(name || "-")}`;
+    if (href) {
+        return `<a href="${escapeHtml(
+            href
+        )}" target="_blank" rel="noopener noreferrer" class="platform-badge-small platform-badge-link" style="background:${color};" title="${escapeHtml(
+            roleLabel
+        )}: ${escapeHtml(name || "-")} を開く">${label} ↗</a>`;
+    }
+    return `<span class="platform-badge-small" style="background:${color};" title="${escapeHtml(
+        roleLabel
+    )}: ${escapeHtml(name || "-")}">${label}</span>`;
+}
+
 function renderCardHtml(p) {
     const deployColor = sanitizeColor(p._deployPlat.color, "#64748b");
     const codeColor = p._codePlat ? sanitizeColor(p._codePlat.color, "#475569") : "";
@@ -565,6 +579,23 @@ function renderCardHtml(p) {
 
     const { lpUrl, formUrl, sheetUrl, editUrl, hasPublicLink, hasManageLink, notices } =
         p._access;
+
+    const deployBadgeHtml = renderPlatformBadgeHtml({
+        icon: "🖥️",
+        name: p._deployPlat.name || "-",
+        color: deployColor,
+        href: lpUrl || formUrl || "",
+        roleLabel: "デプロイ先"
+    });
+    const codeBadgeHtml = p._codePlat
+        ? renderPlatformBadgeHtml({
+              icon: "🔐",
+              name: p._codePlat.name,
+              color: codeColor,
+              href: editUrl || "",
+              roleLabel: "コード保管先"
+          })
+        : "";
 
     const links = [];
     if (lpUrl) {
@@ -633,16 +664,8 @@ function renderCardHtml(p) {
                     </h3>
                     <div class="project-meta">
                         ${creatorsHtml}
-                        <span class="platform-badge-small" style="background:${deployColor};">🖥️ ${escapeHtml(
-        p._deployPlat.name || "-"
-    )}</span>
-                        ${
-                            p._codePlat
-                                ? `<span class="platform-badge-small" style="background:${codeColor};">🔐 ${escapeHtml(
-                                      p._codePlat.name
-                                  )}</span>`
-                                : ""
-                        }
+                        ${deployBadgeHtml}
+                        ${codeBadgeHtml}
                         ${accessBadgesHtml}
                     </div>
                 </div>
@@ -709,22 +732,31 @@ function openDetailModal(projectId) {
     if (sheetUrl) urlRows.push({ label: "📊 スプレッドシート", url: sheetUrl, cls: "link-sheet" });
     if (editUrl) urlRows.push({ label: "⚙️ 編集画面・コード", url: editUrl, cls: "link-edit" });
 
+    const deployBadgeHtml = renderPlatformBadgeHtml({
+        icon: "🖥️",
+        name: p._deployPlat.name || "-",
+        color: deployColor,
+        href: lpUrl || formUrl || "",
+        roleLabel: "デプロイ先"
+    });
+    const codeBadgeHtml = p._codePlat
+        ? renderPlatformBadgeHtml({
+              icon: "🔐",
+              name: p._codePlat.name,
+              color: codeColor,
+              href: editUrl || "",
+              roleLabel: "コード保管先"
+          })
+        : "";
+
     bodyEl.innerHTML = `
         <div class="project-meta">
             <span class="creator-badge">📂 ${escapeHtml(categoryName)}</span>
             ${(p._creators.length ? p._creators : ["-"])
                 .map(c => `<span class="creator-badge">👤 ${escapeHtml(c)}</span>`)
                 .join("")}
-            <span class="platform-badge-small" style="background:${deployColor};">🖥️ ${escapeHtml(
-        p._deployPlat.name || "-"
-    )}</span>
-            ${
-                p._codePlat
-                    ? `<span class="platform-badge-small" style="background:${codeColor};">🔐 ${escapeHtml(
-                          p._codePlat.name
-                      )}</span>`
-                    : ""
-            }
+            ${deployBadgeHtml}
+            ${codeBadgeHtml}
             ${
                 p._releaseDateText
                     ? `<span class="release-date">${escapeHtml(p._releaseDateText)}</span>`
