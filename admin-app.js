@@ -648,6 +648,11 @@ function setupFormSubmissions() {
             delete data.docId;
 
             if (colName === "projects") {
+                data.title = String(data.title ?? "").trim();
+                if (data.deployPlatformId) {
+                    data.platformId = data.deployPlatformId;
+                }
+
                 const selectedCreators = [];
                 document.querySelectorAll(".creator-checkbox:checked").forEach(cb => {
                     selectedCreators.push(cb.value);
@@ -668,6 +673,13 @@ function setupFormSubmissions() {
                         return;
                     }
                     data[key] = clean;
+                }
+
+                if (data.url && /^https?:\/\/(www\.)?github\.com\//i.test(data.url)) {
+                    alert(
+                        "公開サイト (LP) 欄にはGitHubリポジトリではなくデプロイ先URLを入力してください。GitHub URLは「編集画面・コード」欄へ入力してください。"
+                    );
+                    return;
                 }
 
                 const cleanedDesc = cleanProjectDescription(data.description);
